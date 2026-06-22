@@ -1,51 +1,16 @@
-# TR Project Template
+# React + Vite
 
-## Project Information
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Please complete the following before submitting your repository.
+Currently, two official plugins are available:
 
-**Project Name:**  
-**Team Name:**  
-**Cohort / Sprint:**  
-**Team Members:**  
-**Tech Stack:** 
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Project Overview
+## React Compiler
 
-Provide a short description of your project:
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-- What problem does it solve?  
-- Who is the target user?  
-- What core features were completed?  
+## Expanding the ESLint configuration
 
-## Setup & Documentation
-
-Include any necessary documentation below:
-
-- Setup instructions  
-- Required environment variables  
-- API documentation (if applicable)  
-- Test credentials (if applicable)  
-- Deployment link (if available)  
-
-## Notes
-
-List any known limitations, incomplete features, or important technical considerations.
-
-## Development Standards Reminder
-
-All submissions should reflect professional engineering standards:
-
-- Write clean, readable, and modular code  
-- Use clear naming conventions  
-- Remove unused files, variables, and console logs  
-- Follow consistent formatting and linting practices  
-- Write meaningful commit messages  
-- Keep branches organized and avoid pushing broken code to main  
-- Review teammate pull requests respectfully and constructively  
-
-Your repository should be organized, understandable, and demo-ready.
-
-## Intellectual Property Notice
-
-This project was created as part of a Coding Temple Tech Residency. All work produced during the residency is considered the intellectual property of Coding Temple or the sponsoring employer, unless otherwise stated in a signed agreement. By contributing to this project, you acknowledge and agree to these terms.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
