@@ -1,27 +1,50 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
-from app.schemas.auth import Token, UserResponse, UserSignup
+from app.schemas.auth import UserResponse, UserSignup
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+settings = get_settings()
+
+# Cookie max age = JWT expiry (in seconds)
+COOKIE_MAX_AGE = settings.jwt_access_token_expire_minutes * 60
+
+
+def _set_auth_cookie(response: Response, token: str) -> None:
+    """Set the JWT as an httpOnly cookie on the response."""
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        max_age=COOKIE_MAX_AGE,
+        httponly=True,           # JS can't read this cookie (XSS-safe)
+        secure=True,             # Only sent over HTTPS in production
+        samesite="lax",          # Basic CSRF protection
+        path="/",
+    )
 
 
 @router.post(
     "/signup",
-    response_model=Token,
+    response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def signup(payload: UserSignup, db: Session = Depends(get_db)) -> Token:
+def signup(
+    payload: UserSignup,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> User:
     """
     Register a new user.
-    Returns a JWT access token immediately so the user is logged in.
+    Sets the JWT as an httpOnly cookie so the user is immediately authenticated.
+    Returns the user info (no password_hash, no token in body).
     """
-    # Check if email already taken
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing:
         raise HTTPException(
@@ -29,7 +52,6 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> Token:
             detail="Email already registered",
         )
 
-    # Create user with hashed password
     user = User(
         email=payload.email,
         password_hash=hash_password(payload.password),
@@ -38,29 +60,29 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> Token:
     db.commit()
     db.refresh(user)
 
-    # Issue a token immediately so signup → logged in (no second request needed)
     token = create_access_token(subject=user.id)
-    return Token(access_token=token)
+    _set_auth_cookie(response, token)
+
+    return user
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=UserResponse)
 def login(
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
-) -> Token:
+) -> User:
     """
-    Login with email + password (sent as form data, not JSON,
-    so Swagger UI's 'Authorize' button works).
-    Returns a JWT access token.
+    Login with email + password (sent as form data).
+    Sets the JWT as an httpOnly cookie.
+    Returns user info (no token in body — it's in the cookie).
     """
-    # OAuth2PasswordRequestForm uses 'username' field — we treat it as email
     user = db.query(User).filter(User.email == form_data.username).first()
 
     if user is None or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
     if not user.is_active:
@@ -70,13 +92,24 @@ def login(
         )
 
     token = create_access_token(subject=user.id)
-    return Token(access_token=token)
+    _set_auth_cookie(response, token)
+
+    return user
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(response: Response) -> None:
+    """
+    Logout — clear the auth cookie.
+    Since JWT is stateless, this just removes the cookie client-side.
+    """
+    response.delete_cookie(key="access_token", path="/")
 
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)) -> User:
     """
     Return the currently authenticated user.
-    Requires a valid Bearer token in the Authorization header.
+    Requires a valid auth cookie.
     """
     return current_user
