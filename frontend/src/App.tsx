@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LoginPage from '../frontend/src/pages/LoginPage';
+import LoginPage from './pages/LoginPage';
 
 
 function App() {
