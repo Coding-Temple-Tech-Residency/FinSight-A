@@ -1,20 +1,13 @@
 import { useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
   return (
-    <div>
-      <h1>FinSight</h1>
-    
     <BrowserRouter>
-      <Routes>
-        <Route path='/' element = {<LoginPage />} />
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
-    </div>
-  )
+  );
 }
 
-export default App
+export default App;
