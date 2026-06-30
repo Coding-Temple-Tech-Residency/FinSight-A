@@ -113,3 +113,88 @@ def get_me(current_user: User = Depends(get_current_user)) -> User:
     Requires a valid auth cookie.
     """
     return current_user
+
+@router.post("/forgot-password")
+def forgot_password(
+    email: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Request password reset token.
+    
+    Returns JWT token valid for 24 hours.
+    Email address must exist in system.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Create reset token (24hr expiry)
+    from datetime import datetime, timedelta
+    
+    payload = {
+        "sub": user.id,
+        "email": user.email,
+        "exp": datetime.utcnow() + timedelta(hours=24),
+        "purpose": "password_reset"
+    }
+    
+    reset_token = create_access_token(subject=user.id, expires_delta=timedelta(hours=24))
+    
+    return {
+        "message": "Reset token sent to email",
+        "reset_token": reset_token,
+        "expires_in": 86400
+    }
+
+
+@router.post("/reset-password", response_model=UserResponse)
+def reset_password(
+    reset_token: str,
+    new_password: str,
+    db: Session = Depends(get_db),
+) -> User:
+    """
+    Reset password using token from forgot-password.
+    
+    Token must be valid and not expired.
+    """
+    try:
+        import jwt
+        
+        payload = jwt.decode(
+            reset_token,
+            settings.secret_key,
+            algorithms=[settings.jwt_algorithm]
+        )
+        
+        user_id = payload.get("sub")
+        user = db.query(User).filter(User.id == user_id).first()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Hash and update password
+        user.password_hash = hash_password(new_password)
+        db.commit()
+        db.refresh(user)
+        
+        return user
+    
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token expired"
+        )
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid token"
+        )
