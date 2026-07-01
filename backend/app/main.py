@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.core.database import Base, engine
 from app.models import user  # noqa: F401 — register model with Base
-from app.api.v1 import auth as auth_router
+from app.models import portfolio  # noqa: F401 — register portfolio models
+from app.api.v1.router import router as api_router
 
 settings = get_settings()
 
@@ -38,7 +39,7 @@ app.add_middleware(
 )
 
 # Register routers
-app.include_router(auth_router.router, prefix=settings.api_v1_prefix)
+app.include_router(api_router)
 
 @app.get("/")
 def root():
