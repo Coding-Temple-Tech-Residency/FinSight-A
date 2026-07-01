@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { getLanding } from "../store/landing";
 
 export default function LandingPage() {
   const dispatch = useAppDispatch();
@@ -10,7 +11,7 @@ export default function LandingPage() {
   const landingData = useAppSelector(state => state.landing);
 
   useEffect(() => {
-    dispatch(landingData());
+    //dispatch(landingData());
   }, [dispatch]);
 
   return (
