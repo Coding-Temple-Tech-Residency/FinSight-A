@@ -2,11 +2,20 @@
 
 import Profile from "../components/Profile";
 import { Profile as ProfileType } from "../types/profile";
+import { useAuth } from "../context/AuthContext";
 
 export default function ProfilePage() {
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (!isAuthenticated || !user) {
+    return <div>Please log in.</div>;
+  }
+
   const profile: ProfileType = {
     id: 0,
-    email: "user@example.com",
+    email: user.email ?? "",
     firstName: "",
     lastInitial: "",
     avatarUrl: "",
