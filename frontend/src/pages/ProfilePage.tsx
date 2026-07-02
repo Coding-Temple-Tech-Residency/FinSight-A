@@ -1,12 +1,14 @@
 //FinSight-A/frontend/src/pages/ProfilePage/ProfilePage.tsx
 
-import Profile from "../../components/Profile/Profile";
-import { Profile as ProfileType } from "../../types/profile";
+import Profile from "../components/Profile";
+import { Profile as ProfileType } from "../types/profile";
 
 export default function ProfilePage() {
   const profile: ProfileType = {
-    id: "",
+    id: 0,
     email: "user@example.com",
+    firstName: "",
+    lastInitial: "",
     avatarUrl: "",
     theme: "system",
     isDayTrader: false,
