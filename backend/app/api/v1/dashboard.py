@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.user import User
+from app.schemas.market import MoverItem
+from app.services.market import get_top_movers
 from app.services.portfolio import get_user_portfolios
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -28,7 +30,7 @@ class DashboardResponse(BaseModel):
     user_profile: UserProfile
     portfolio_summary: PortfolioSummary
     watchlist_preview: List[Any]
-    recent_market_trends: List[Any]
+    recent_market_trends: List[MoverItem]
 
 
 @router.get(
@@ -61,5 +63,7 @@ def get_dashboard(
             total_value=total_value,
         ),
         watchlist_preview=[],
-        recent_market_trends=[],
+        recent_market_trends=[
+            MoverItem(**m) for m in get_top_movers()["top_gainers"][:5]
+        ],
     )
