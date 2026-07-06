@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from datetime import timedelta
 
 from app.api.deps import get_current_user
@@ -20,13 +20,19 @@ COOKIE_MAX_AGE = settings.jwt_access_token_expire_minutes * 60
 
 class ForgotPasswordRequest(BaseModel):
     """Request body for forgot-password endpoint."""
-    email: str = Field(..., description="Registered email address", json_schema_extra={"example": "user@example.com"})
+    email: EmailStr = Field(..., description="Registered email address", json_schema_extra={"example": "user@example.com"})
 
 
 class ResetPasswordRequest(BaseModel):
     """Request body for reset-password endpoint."""
     reset_token: str = Field(..., description="JWT token received from forgot-password")
-    new_password: str = Field(..., min_length=8, description="New password (min 8 characters)", json_schema_extra={"example": "NewSecurePass123"})
+    new_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=72,  # matches signup policy - bcrypt's byte limit
+        description="New password (8-72 characters)",
+        json_schema_extra={"example": "NewSecurePass123"},
+    )
 
 
 def _set_auth_cookie(response: Response, token: str) -> None:
