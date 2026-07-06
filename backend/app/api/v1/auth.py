@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import timedelta
 
 from app.api.deps import get_current_user
@@ -19,12 +19,14 @@ COOKIE_MAX_AGE = settings.jwt_access_token_expire_minutes * 60
 
 
 class ForgotPasswordRequest(BaseModel):
-    email: str
+    """Request body for forgot-password endpoint."""
+    email: str = Field(..., description="Registered email address", json_schema_extra={"example": "user@example.com"})
 
 
 class ResetPasswordRequest(BaseModel):
-    reset_token: str
-    new_password: str
+    """Request body for reset-password endpoint."""
+    reset_token: str = Field(..., description="JWT token received from forgot-password")
+    new_password: str = Field(..., min_length=8, description="New password (min 8 characters)", json_schema_extra={"example": "NewSecurePass123"})
 
 
 def _set_auth_cookie(response: Response, token: str) -> None:
@@ -44,13 +46,25 @@ def _set_auth_cookie(response: Response, token: str) -> None:
     "/signup",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Register a new user",
+    responses={
+        201: {"description": "User created successfully"},
+        400: {"description": "Email already registered"},
+    },
 )
 def signup(
     payload: UserSignup,
     response: Response,
     db: Session = Depends(get_db),
 ) -> User:
-    """Register a new user."""
+    """
+    Register a new user account.
+    
+    - **email**: Valid email address (must be unique)
+    - **password**: User's password (will be hashed with bcrypt)
+    
+    Returns the created user and sets an httpOnly auth cookie.
+    """
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing:
         raise HTTPException(
@@ -72,13 +86,29 @@ def signup(
     return user
 
 
-@router.post("/login", response_model=UserResponse)
+@router.post(
+    "/login",
+    response_model=UserResponse,
+    summary="Login with email and password",
+    responses={
+        200: {"description": "Login successful"},
+        401: {"description": "Incorrect email or password"},
+        403: {"description": "User account is inactive"},
+    },
+)
 def login(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ) -> User:
-    """Login with email + password."""
+    """
+    Authenticate user and return access token as httpOnly cookie.
+    
+    - **username**: Email address (OAuth2 standard field name)
+    - **password**: User's password
+    
+    Sets JWT token in httpOnly cookie for subsequent authenticated requests.
+    """
     user = db.query(User).filter(User.email == form_data.username).first()
 
     if user is None or not verify_password(form_data.password, user.password_hash):
@@ -99,24 +129,69 @@ def login(
     return user
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Logout current user",
+)
 def logout(response: Response) -> None:
-    """Logout - clear the auth cookie."""
+    """
+    Logout by clearing the authentication cookie.
+    
+    No request body needed - uses cookie from browser.
+    """
     response.delete_cookie(key="access_token", path="/")
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Get current authenticated user",
+    responses={
+        200: {"description": "Current user data"},
+        401: {"description": "Not authenticated"},
+    },
+)
 def get_me(current_user: User = Depends(get_current_user)) -> User:
-    """Return the currently authenticated user."""
+    """
+    Get the currently authenticated user's information.
+    
+    Requires valid JWT token in httpOnly cookie.
+    """
     return current_user
 
 
-@router.post("/forgot-password")
+@router.post(
+    "/forgot-password",
+    summary="Request password reset token",
+    responses={
+        200: {
+            "description": "Reset token generated",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "message": "Reset token sent to email",
+                        "reset_token": "eyJhbGc...",
+                        "expires_in": 86400
+                    }
+                }
+            }
+        },
+        404: {"description": "User not found"},
+    },
+)
 def forgot_password(
     request: ForgotPasswordRequest,
     db: Session = Depends(get_db),
 ):
-    """Request password reset token. Returns JWT valid for 24 hours."""
+    """
+    Request a password reset token.
+    
+    - **email**: Registered email address
+    
+    Returns a JWT token valid for 24 hours. In production, this would be
+    emailed to the user instead of returned directly.
+    """
     user = db.query(User).filter(User.email == request.email).first()
     
     if not user:
@@ -134,12 +209,28 @@ def forgot_password(
     }
 
 
-@router.post("/reset-password", response_model=UserResponse)
+@router.post(
+    "/reset-password",
+    response_model=UserResponse,
+    summary="Reset password using token",
+    responses={
+        200: {"description": "Password reset successful"},
+        400: {"description": "Token expired or invalid"},
+        404: {"description": "User not found"},
+    },
+)
 def reset_password(
     request: ResetPasswordRequest,
     db: Session = Depends(get_db),
 ) -> User:
-    """Reset password using token. Token must be valid and not expired."""
+    """
+    Reset user password using a valid reset token.
+    
+    - **reset_token**: JWT token from forgot-password endpoint
+    - **new_password**: New password (min 8 characters)
+    
+    Token must not be expired (valid for 24 hours from generation).
+    """
     try:
         import jwt
         

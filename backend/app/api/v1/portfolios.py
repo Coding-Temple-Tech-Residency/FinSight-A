@@ -9,7 +9,6 @@ Portfolio domain FastAPI routes.
 All routes require JWT authentication and verify user ownership.
 """
 
-from uuid import UUID
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -17,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.models.user import User
-from app.core.database import SessionLocal
+from app.core.database import get_db
 from app.models.portfolio import Portfolio, Holding, Transaction
 from app.schemas.portfolio import (
     PortfolioCreate,
@@ -45,15 +44,6 @@ router = APIRouter(
 )
 
 
-def get_db():
-    """Get database session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 # ==========================================
 # PORTFOLIO ENDPOINTS
 # ==========================================
@@ -79,7 +69,7 @@ async def create_portfolio(
         db.add(portfolio)
         db.commit()
         db.refresh(portfolio)
-        return PortfolioResponse.from_orm(portfolio)
+        return PortfolioResponse.model_validate(portfolio)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -99,7 +89,7 @@ async def list_portfolios(
         portfolios = db.query(Portfolio).filter_by(user_id=current_user.id).all()
         portfolio_responses = []
         for p in portfolios:
-            response = PortfolioResponse.from_orm(p)
+            response = PortfolioResponse.model_validate(p)
             response.holdings_count = len(p.holdings) if p.holdings else 0
             portfolio_responses.append(response)
         return PortfolioListResponse(portfolios=portfolio_responses, total=len(portfolio_responses))
@@ -113,7 +103,7 @@ async def list_portfolios(
     summary="Get portfolio with holdings",
 )
 async def get_portfolio(
-    portfolio_id: UUID,
+    portfolio_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -127,8 +117,8 @@ async def get_portfolio(
         if not portfolio:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
-        response = PortfolioWithHoldings.from_orm(portfolio)
-        response.holdings = [HoldingResponse.from_orm(h) for h in portfolio.holdings]
+        response = PortfolioWithHoldings.model_validate(portfolio)
+        response.holdings = [HoldingResponse.model_validate(h) for h in portfolio.holdings]
         return response
     except HTTPException:
         raise
@@ -142,7 +132,7 @@ async def get_portfolio(
     summary="Update portfolio",
 )
 async def update_portfolio(
-    portfolio_id: UUID,
+    portfolio_id: str,
     req: PortfolioUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -164,7 +154,7 @@ async def update_portfolio(
         
         db.commit()
         db.refresh(portfolio)
-        return PortfolioResponse.from_orm(portfolio)
+        return PortfolioResponse.model_validate(portfolio)
     except HTTPException:
         raise
     except Exception as e:
@@ -178,7 +168,7 @@ async def update_portfolio(
     summary="Delete portfolio",
 )
 async def delete_portfolio(
-    portfolio_id: UUID,
+    portfolio_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -213,7 +203,7 @@ async def delete_portfolio(
     summary="Add holding to portfolio",
 )
 async def create_holding(
-    portfolio_id: UUID,
+    portfolio_id: str,
     req: HoldingCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -245,7 +235,7 @@ async def create_holding(
         db.add(holding)
         db.commit()
         db.refresh(holding)
-        return HoldingResponse.from_orm(holding)
+        return HoldingResponse.model_validate(holding)
     except HTTPException:
         raise
     except Exception as e:
@@ -259,7 +249,7 @@ async def create_holding(
     summary="List portfolio holdings",
 )
 async def list_holdings(
-    portfolio_id: UUID,
+    portfolio_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -275,7 +265,7 @@ async def list_holdings(
         
         holdings = db.query(Holding).filter_by(portfolio_id=portfolio_id).all()
         return HoldingListResponse(
-            holdings=[HoldingResponse.from_orm(h) for h in holdings],
+            holdings=[HoldingResponse.model_validate(h) for h in holdings],
             total=len(holdings)
         )
     except HTTPException:
@@ -290,8 +280,8 @@ async def list_holdings(
     summary="Update holding",
 )
 async def update_holding(
-    portfolio_id: UUID,
-    holding_id: UUID,
+    portfolio_id: str,
+    holding_id: str,
     req: HoldingUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -321,7 +311,7 @@ async def update_holding(
         
         db.commit()
         db.refresh(holding)
-        return HoldingResponse.from_orm(holding)
+        return HoldingResponse.model_validate(holding)
     except HTTPException:
         raise
     except Exception as e:
@@ -335,8 +325,8 @@ async def update_holding(
     summary="Delete holding",
 )
 async def delete_holding(
-    portfolio_id: UUID,
-    holding_id: UUID,
+    portfolio_id: str,
+    holding_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -379,7 +369,7 @@ async def delete_holding(
     summary="Record transaction (buy/sell)",
 )
 async def create_transaction(
-    portfolio_id: UUID,
+    portfolio_id: str,
     req: TransactionCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -387,8 +377,12 @@ async def create_transaction(
     """
     Record a transaction (buy/sell).
     
-    NOTE: Holding auto-update logic should be in service.py
+    Delegates to the service layer, which auto-updates the
+    corresponding holding (weighted average cost on buy,
+    quantity reduction on sell).
     """
+    from app.services.portfolio import create_transaction as create_transaction_service
+
     try:
         portfolio = db.query(Portfolio).filter_by(
             id=portfolio_id,
@@ -398,17 +392,15 @@ async def create_transaction(
         if not portfolio:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
-        transaction = Transaction(
+        transaction = create_transaction_service(
             portfolio_id=portfolio_id,
             symbol=req.symbol,
-            type=req.type,
+            trans_type=req.type,
             quantity=req.quantity,
-            price_at_trade=req.price_at_trade
+            price_at_trade=req.price_at_trade,
+            db=db,
         )
-        db.add(transaction)
-        db.commit()
-        db.refresh(transaction)
-        return TransactionResponse.from_orm(transaction)
+        return TransactionResponse.model_validate(transaction)
     except HTTPException:
         raise
     except Exception as e:
@@ -422,7 +414,7 @@ async def create_transaction(
     summary="List portfolio transactions",
 )
 async def list_transactions(
-    portfolio_id: UUID,
+    portfolio_id: str,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
     current_user: User = Depends(get_current_user),
@@ -446,7 +438,7 @@ async def list_transactions(
         ).order_by(Transaction.traded_at.desc()).offset(offset).limit(limit).all()
         
         return TransactionListResponse(
-            transactions=[TransactionResponse.from_orm(t) for t in transactions],
+            transactions=[TransactionResponse.model_validate(t) for t in transactions],
             total=total,
             page=page,
             limit=limit

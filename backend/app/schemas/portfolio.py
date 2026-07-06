@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 # ==========================================
@@ -24,7 +24,8 @@ class PortfolioCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Portfolio name")
     description: Optional[str] = Field(None, max_length=500, description="Optional description")
 
-    @validator("name")
+    @field_validator("name")
+    @classmethod
     def name_not_empty(cls, v):
         if not v or v.isspace():
             raise ValueError("Name cannot be empty or whitespace only")
@@ -45,7 +46,8 @@ class PortfolioUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=500)
 
-    @validator("name")
+    @field_validator("name")
+    @classmethod
     def name_not_empty(cls, v):
         if v is not None and (not v or v.isspace()):
             raise ValueError("Name cannot be empty or whitespace only")
@@ -96,7 +98,8 @@ class HoldingCreate(BaseModel):
     quantity: Decimal = Field(..., gt=0, decimal_places=4, description="Number of shares")
     avg_cost: Optional[Decimal] = Field(None, gt=0, decimal_places=6, description="Average purchase price")
 
-    @validator("symbol")
+    @field_validator("symbol")
+    @classmethod
     def symbol_uppercase(cls, v):
         return v.upper().strip()
 
@@ -155,11 +158,13 @@ class TransactionCreate(BaseModel):
     quantity: Decimal = Field(..., gt=0, decimal_places=4, description="Number of shares (always positive)")
     price_at_trade: Optional[Decimal] = Field(None, gt=0, decimal_places=6, description="Price per share")
 
-    @validator("symbol")
+    @field_validator("symbol")
+    @classmethod
     def symbol_uppercase(cls, v):
         return v.upper().strip()
 
-    @validator("type")
+    @field_validator("type")
+    @classmethod
     def type_lowercase(cls, v):
         return v.lower().strip()
 
