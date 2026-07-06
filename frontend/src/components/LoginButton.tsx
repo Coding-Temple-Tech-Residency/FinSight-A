@@ -5,12 +5,9 @@ function LoginButton () {
     const { loginWithRedirect } = useAuth0();
 
     return (
-        <button className="bg-indigo-600 hover:bg-indigo-800 acitive:bg-indigo-900 text-white font-semibold px-4 py-2 rounded-md transition"
-        onClick={() => loginWithRedirect({
-            appState: {
-                returnTo: '/dashboard',
-            },
-        }) 
+        <button className="bg-indigo-500 hover:bg-indigo-700 acitive:bg-indigo-900 text-white font-semibold px-4 py-2 rounded-md transition"
+        onClick={() => loginWithRedirect(
+        ) 
         }>
             Log In
         </button>
