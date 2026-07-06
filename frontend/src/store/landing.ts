@@ -17,7 +17,17 @@ const load_landing = (landingData: LandingData) => ({
 
 export const getLanding = () => async (dispatch: any) => {
   try {
-    const res = await fetch("/api/landing");
+
+    //Mock data remove once backend is connected
+
+    // const data = {
+    //   trendingStocks:  ["AAPL", "TSLA", "NVDA"],
+    //   trendingPerformance: [1.2, -0.5, 2.8],
+    //   aiInsight: "Market is showing mixed momentum in tech sector.",
+    //   trendingHighlights: ["AI rally continues", "Fed uncertaintiy remains"],
+    // };
+
+    const res = await fetch("/api/v1/landing");
 
     if (!res.ok) throw Error("Failed to get landing data");
 
@@ -26,9 +36,9 @@ export const getLanding = () => async (dispatch: any) => {
     dispatch(load_landing(data));
   } catch (e) {
     console.error("Error loading landing page", e);
-  } finally {
+  } {/*finally {
     dispatch(getLanding());
-  }
+  } */}
 };
 
 /********************************** INITIAL STATE AND REDUCER ********************/

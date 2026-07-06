@@ -1,7 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
+import landingReducer from "./landing";
 
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    landing: landingReducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
