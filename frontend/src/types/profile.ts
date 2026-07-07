@@ -6,12 +6,14 @@ export interface Profile {
 
   firstName: string;
   lastInitial: string;
-  
+
   avatarUrl?: string;
 
   theme: "light" | "dark" | "system";
 
   isDayTrader: boolean;
+
+  aiRefreshInterval: number;
 
   createdAt: string;
   updatedAt: string;
