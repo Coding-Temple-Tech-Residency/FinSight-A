@@ -1,6 +1,6 @@
 //FinSight-A/frontend/src/components/Profile/Profile.tsx
 
-import { Profile as ProfileType } from "../../types/profile";
+import { Profile as ProfileType } from "../types/profile";
 
 interface ProfileProps {
   profile: ProfileType;
