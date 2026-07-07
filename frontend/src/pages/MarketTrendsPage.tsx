@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import { fetchTrends, fetchQuote, clearQuote } from "../features/market/marketSlice";
 
 export default function MarketTrendsPage() {
