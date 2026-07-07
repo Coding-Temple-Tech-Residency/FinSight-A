@@ -93,6 +93,12 @@ Place `VITE_API_URL=http://localhost:8000` in `frontend/.env` for local dev.
 ```bash
 # Backend
 cd backend
+python -m venv venv
+# macOS/Linux:
+source venv/bin/activate
+# Windows:
+venv\Scripts\activate
+pip install -r requirements.txt
 uvicorn app.main:app --reload
 # → http://localhost:8000
 # → http://localhost:8000/docs  (Swagger)
