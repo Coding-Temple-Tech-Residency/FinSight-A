@@ -34,13 +34,30 @@ export default function LandingPage() {
         <Link to="/register">Register</Link>
       </header>
 
-      <section>Trending Stocks </section>
+      <section>
+        <h2>Trending Stocks</h2> 
+        {landingData.trendingStocks.map((stock) => (<p key={stock}>{stock}</p>))}  
+      </section>
 
-      <section>Trending Performance</section>
+      <section>
+        <h2>Trending Performance</h2>
+        {landingData.trendingPerformance.map((performance, index) => (
+          <p key={index}>{performance}%</p>
+        ))}  
+      </section>
 
-      <section>FinSight </section>
 
-      <section>Trending Highlights</section>
+      <section>
+        <h2>FinSight</h2> 
+        <p>{landingData.aiInsight}</p>  
+      </section>
+
+      <section>
+        <h2>Trending Highlights</h2>
+        {landingData.trendingHighlights.map((highlight) => (
+          <p key={highlight}>{highlight}</p>
+        ))}
+      </section>
     </main>
   );
 }
