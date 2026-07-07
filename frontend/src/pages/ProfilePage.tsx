@@ -1,12 +1,23 @@
 //FinSight-A/frontend/src/pages/ProfilePage/ProfilePage.tsx
 
-import Profile from "../../components/Profile/Profile";
-import { Profile as ProfileType } from "../../types/profile";
+import Profile from "../components/Profile";
+import { Profile as ProfileType } from "../types/profile";
+import { useAuth } from "../context/AuthContext";
 
 export default function ProfilePage() {
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (!isAuthenticated || !user) {
+    return <div>Please log in.</div>;
+  }
+
   const profile: ProfileType = {
-    id: "",
-    email: "user@example.com",
+    id: 0,
+    email: user.email ?? "",
+    firstName: "",
+    lastInitial: "",
     avatarUrl: "",
     theme: "system",
     isDayTrader: false,
