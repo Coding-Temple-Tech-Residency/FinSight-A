@@ -11,7 +11,7 @@ function LoginButton () {
                 redirect_uri: `${window.location.origin}/dashboard`,
             },
         }) }>
-            Log In
+            Log In/Register
         </button>
     );
 }
