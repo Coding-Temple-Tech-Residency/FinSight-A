@@ -9,6 +9,8 @@ from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.user import User
 from app.services.portfolio import get_user_portfolios
+from app.services.watchlist import list_items as list_watchlist_items
+from app.schemas.watchlist import WatchlistItemResponse
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -27,7 +29,7 @@ class PortfolioSummary(BaseModel):
 class DashboardResponse(BaseModel):
     user_profile: UserProfile
     portfolio_summary: PortfolioSummary
-    watchlist_preview: List[Any]
+    watchlist_preview: List[WatchlistItemResponse]
     recent_market_trends: List[Any]
 
 
@@ -60,6 +62,6 @@ def get_dashboard(
             count=len(portfolios),
             total_value=total_value,
         ),
-        watchlist_preview=[],
+        watchlist_preview=list_watchlist_items(user_id=current_user.id, db=db)[:5],
         recent_market_trends=[],
     )
