@@ -11,6 +11,8 @@ from app.models.user import User
 from app.schemas.market import MoverItem
 from app.services.market import get_top_movers
 from app.services.portfolio import get_user_portfolios
+from app.services.watchlist import list_items as list_watchlist_items
+from app.schemas.watchlist import WatchlistItemResponse
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -31,6 +33,8 @@ class DashboardResponse(BaseModel):
     portfolio_summary: PortfolioSummary
     watchlist_preview: List[Any]
     recent_market_trends: List[MoverItem]
+    watchlist_preview: List[WatchlistItemResponse]
+    recent_market_trends: List[Any]
 
 
 @router.get(
@@ -66,4 +70,6 @@ def get_dashboard(
         recent_market_trends=[
             MoverItem(**m) for m in get_top_movers()["top_gainers"][:5]
         ],
+        watchlist_preview=list_watchlist_items(user_id=current_user.id, db=db)[:5],
+        recent_market_trends=[],
     )
