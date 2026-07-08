@@ -17,7 +17,7 @@ const load_landing = (landingData: LandingData) => ({
 
 export const getLanding = () => async (dispatch: any) => {
   try {
-    const res = await fetch("/api/landing");
+    const res = await fetch("/api/v1/landing");
 
     if (!res.ok) throw Error("Failed to get landing data");
 
@@ -26,9 +26,9 @@ export const getLanding = () => async (dispatch: any) => {
     dispatch(load_landing(data));
   } catch (e) {
     console.error("Error loading landing page", e);
-  } finally {
-    dispatch(getLanding());
-  }
+  }//  finally {
+  //   dispatch(getLanding());
+  //}
 };
 
 /********************************** INITIAL STATE AND REDUCER ********************/
