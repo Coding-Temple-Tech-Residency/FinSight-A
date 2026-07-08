@@ -3,9 +3,9 @@ import LandingPage from "../pages/LandingPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import DashboardPage from "../pages/DashboardPage";
+import WatchlistPage from "../pages/WatchlistPage";
 import MarketTrendsPage from "../pages/MarketTrendsPage";
 import ProfilePage from "../pages/ProfilePage";
-import WatchlistPage from "../pages/WatchlistPage";
 
 export default function AppRoutes() {
   return (
@@ -14,9 +14,9 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/watchlist" element={<WatchlistPage />} />
       <Route path="/market-trends" element={<MarketTrendsPage />} />
       <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/watchlist" element={<WatchlistPage />} />
     </Routes>
   );
 }
