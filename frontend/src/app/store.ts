@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import profileReducer from "../features/profile/profileSlice";
 import watchlistReducer from "../features/watchlist/watchlistSlice";
+import landingReducer from "../features/landing/landingSlice";
 
 export const store = configureStore({
   reducer: {
     profile: profileReducer,
-    watchlist: watchlistReducer
+    watchlist: watchlistReducer,
+    landing: landingReducer
 
 // export const store = configureStore({
 //   reducer: {

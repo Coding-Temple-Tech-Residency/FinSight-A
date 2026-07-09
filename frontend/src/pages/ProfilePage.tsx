@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchProfile, saveProfile } from "../features/profile/profileSlice";
 
 const AI_INTERVAL_OPTIONS = [
