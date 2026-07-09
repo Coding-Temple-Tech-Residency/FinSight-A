@@ -8,19 +8,19 @@ import FinSight from "../components/FinSight";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0D1B2A]">
-      <main className="mx-auto max-w-[1500px] p-6">
-        <div className="grid grid-cols-12 gap-5">
-          <div className="col-span-3">
+    <div className="max-h-screen bg-[#0D1B2A]">
+      <main className="w-full px-1 py-1">
+        <div className="grid grid-cols-12 gap-2">
+          <div className="col-span-4">
             <TrendingStocks />
           </div>
 
-          <div className="col-span-6 space-y-5">
+          <div className="col-span-5 space-y-2">
             <TrendingPerformance />
             <TrendingHighlights />
           </div>
 
-          <div className="col-span-3 space-y-5">
+          <div className="col-span-3 space-y-3">
             <UnlockCard />
             <FinSight />
           </div>

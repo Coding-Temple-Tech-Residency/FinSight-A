@@ -2,20 +2,20 @@
 
 export default function FinSight() {
   return (
-    <div className="rounded-xl border border[#24354D] bg-[#101C31] p-6">
+    <div className="rounded-xl max-h-[450px] border border[#24354D] bg-[#101C31] p-3">
       <div className="mb-6 flex justify-between">
-        <h2 className="text-2xl">🦈 FinSight Insight ✨</h2>
+        <h2 className="text-xl">🦈 FinSight™️  Insight ✨</h2>
 
-        <span className="rounded bg-[#6c63ff] px-3 py-1 text-sm">
-          AI Insight
+        <span className="rounded bg-[#6c63ff] px-3 py-2 text-sm">
+          FinSight ™️
         </span>
       </div>
 
-      <p className="leading-8">
+      <p className="leading-6">
         AI infrastructure demand continues to accelerate...
       </p>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-4 space-y-4">
         <div>
           <span className="text-gray-400">🔑 Key Theme:</span>{" "}
           <span className="text-[#3DD6F5]">AI & Cloud Growth</span>
@@ -31,7 +31,7 @@ export default function FinSight() {
           <span className="text-green-400">Positive</span>
         </div>
 
-        <button className="mt-10 w-full rounded-lg bg-[#6C63FF] py-4 text-xl">
+        <button className="mt-3 w-full rounded-lg bg-[#6C63FF] py-2 text-xl">
           Explore Trending Stocks →
         </button>
       </div>

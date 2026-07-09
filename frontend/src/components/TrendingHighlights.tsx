@@ -1,65 +1,67 @@
 //FinSight-A/frontend/src/components/TrendingHighlights.tsx
 
-export default function TrendingHighlight() {
+export default function TrendingHighlights() {
   return (
-    <div className="rounded-xl border border-[#24354D] bg-[#101c31] p-6">
+    <div className="rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-3">
       <div className="mb-5 flex items-center gap-3">
-        <span className="text-2xl">⚡️</span>
+        <span className="text-[20px]">⚡</span>
 
-        <h2 className="text-3xl font-semibold">Trending Highlights</h2>
+        <h2 className="text-[20px] font-semibold text-white">
+          Trending Highlights
+        </h2>
+      </div>
 
-        <div className="space-y-4">
-          <article className="flex gap-4 rounded-lg border border-[#24354D] bg-[#162337] p-4">
-            <img
-              src="/logos/nvidia.png"
-              alt="NVIDIA"
-              className="h-14 w-14 rounded"
-            />
+      <div className="space-y-2">
+        <article className="flex items-center gap-2 rounded-xl border border-[#24354D] bg-[#162337] p-1">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-black text-3xl">
+            🤖
+          </div>
 
-            <div>
-              <h3 className="text-xl font-semibold">NVIDIA (NVDA)</h3>
+          <div>
+            <h3 className="text-[15px] font-semibold text-white">
+              NVIDIA (NVDA)
+            </h3>
 
-              <p className="mt-2 text-gray-300">
-                NVIDIA continues benefiting from demand for AI infrastructure,
-                with data center revenue a major growth driver.
-              </p>
-            </div>
-          </article>
+            <p className="mt-1 text-[12px] text-gray-300">
+              NVIDIA continues benefiting from demand for AI infrastructure,
+              with data center revenue a major growth driver.
+            </p>
+          </div>
+        </article>
 
-          <article className="flex gap-4 rounded-lg border border-[#24354D] bg-[#162337] p-4">
-            <img
-              src="/logos/apple.png"
-              alt="Apple"
-              className="h-14 w-14 rounded"
-            />
+        <article className="flex items-center gap-2 rounded-xl border border-[#24354D] bg-[#162337] p-1">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-black text-3xl">
+            🍎
+          </div>
 
-            <div>
-              <h3 className="text-xl font-semibold">Apple (AAPL)</h3>
+          <div>
+            <h3 className="text-[15px] font-semibold text-white">
+              Apple (AAPL)
+            </h3>
 
-              <p className="mt-2 text-gray-300">
-                Apple reported stronger-than-expected earnings this quarter,
-                driven by Services revenue and stable iPhone sales.
-              </p>
-            </div>
-          </article>
+            <p className="mt-1 text-[12px] text-gray-300">
+              Apple reported stronger-than-expected earnings this quarter,
+              driven by Services revenue and stable iPhone sales.
+            </p>
+          </div>
+        </article>
 
-          <article className="flex gap-4 rounded-lg border border-[#24354D] bg-[#162337] p-4">
-            <img
-              src="/logos/hershey.png"
-              alt="Hershey"
-              className="h-14 w-14 rounded"
-            />
+        <article className="flex items-center gap-2 rounded-xl border border-[#24354D] bg-[#162337] p-1">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-black text-3xl">
+            🍫
+          </div>
 
-            <div>
-              <h3 className="text-xl font-semibold">Hershey (HSY)</h3>
+          <div>
+            <h3 className="text-[15px] font-semibold text-white">
+              Hershey (HSY)
+            </h3>
 
-              <p className="mt-2 text-gray-300">
-                Hershey faces higher cocoa production costs, which may pressure
-                future profit margins.
-              </p>
-            </div>
-          </article>
-        </div>
+            <p className="mt-1 text-[12px] text-gray-300">
+              Hershey faces higher cocoa production costs, which may pressure
+              future profit margins.
+            </p>
+          </div>
+        </article>
       </div>
     </div>
   );
