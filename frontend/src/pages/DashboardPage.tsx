@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../hooks/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchWatchlist } from "../features/watchlist/watchlistSlice";
 
 export default function DashboardPage() {
