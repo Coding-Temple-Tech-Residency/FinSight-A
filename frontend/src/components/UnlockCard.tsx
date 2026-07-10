@@ -1,11 +1,10 @@
 //FinSight-A/frontend/src/components/UnlockCard.tsx
+import SignupButton from "./SignupButton";
 
 export default function UnlockCard() {
   return (
     <div className="max-h-[200px] rounded-xl border border-[#24354D] bg-[#101c31] p-2">
-      <button className="mb-1 w-full rounded-md bg-[#3DD6F5] py-1 text-[12px] font-semibold text-[#0D1B2A]">
-        Sign Up Free
-      </button>
+      <SignupButton />
 
       <div className="mb-1 text-center text-[24px]">
         🔐 → 🔓

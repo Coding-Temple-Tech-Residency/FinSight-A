@@ -1,22 +1,21 @@
 //Lives in NavBar, only appears after login
-import { useAuth0 } from "@auth0/auth0-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function LogoutButton () {
-    const { logout } = useAuth0();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    async function handleLogout() {
+        await logout();
+        navigate("/");
+    }
 
     return (
-        <button className="bg-red-600 hover:bg-red-800 active:bg-red-900 text-black px-4 py-2 rounded-md transistion focus:ring-2 focus:ring-red-400"
-            onClick ={() => 
-                logout({
-                    logoutParams: {
-                        returnTo: window.location.origin,
-                    },
-                })
-            }
+        <button className="bg-red-600 hover:bg-red-800 active:bg-red-900 text-black px-4 py-1 rounded-md transistion focus:ring-2 focus:ring-red-400"
+            onClick ={handleLogout}
         >
-
             Log Out
-
         </button>
     )
 
