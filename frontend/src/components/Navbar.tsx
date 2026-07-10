@@ -16,6 +16,7 @@ function Navbar() {
                     <Link to="/dashboard">Dashboard</Link>
                     <Link to='/profile'>Profile</Link>
                     <Link to='/watchlist'>Watchlist</Link>
+                    <Link to='/chat'>AI Chat</Link>
                 </div>
                 <div>
 
