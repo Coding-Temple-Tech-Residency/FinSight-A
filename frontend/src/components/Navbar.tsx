@@ -14,6 +14,7 @@ function Navbar() {
 
                 <div className="flex gap-6">
                     <Link to="/dashboard">Dashboard</Link>
+                    <Link to='/market-trends'>Market Trends</Link>
                     <Link to='/profile'>Profile</Link>
                     <Link to='/watchlist'>Watchlist</Link>
                     <Link to='/chat'>AI Chat</Link>
