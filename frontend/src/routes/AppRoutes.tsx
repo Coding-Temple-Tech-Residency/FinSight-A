@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import ChatPage from "../pages/ChatPage";
 import LandingPage from "../pages/LandingPage";
 import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
@@ -17,6 +18,7 @@ export default function AppRoutes() {
       <Route path="/market-trends" element={<MarketTrendsPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/watchlist" element={<WatchlistPage />} />
+      <Route path="/chat" element={<ChatPage />} />
     </Routes>
   );
 }

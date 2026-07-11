@@ -6,6 +6,7 @@ Includes all v1 endpoints.
 
 from fastapi import APIRouter
 
+from app.api.v1.ai import router as ai_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.dashboard import router as dashboard_router
 from app.api.v1.market import router as market_router
@@ -21,3 +22,4 @@ router.include_router(dashboard_router, tags=["dashboard"])
 router.include_router(market_router, tags=["market"])
 router.include_router(profile_router, tags=["profile"])
 router.include_router(watchlist_router, tags=["watchlist"])
+router.include_router(ai_router, tags=["ai"])
