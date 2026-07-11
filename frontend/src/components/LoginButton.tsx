@@ -1,19 +1,13 @@
 //Lives in the NavBar, directs to login page
-import { useAuth0 } from "@auth0/auth0-react";
+import { Link } from "react-router-dom";
 
 function LoginButton () {
-    const { loginWithRedirect } = useAuth0();
-
     return (
-        <button className="bg-indigo-600 hover:bg-indigo-800 acitive:bg-indigo-900 text-white font-semibold px-4 py-2 rounded-md transition"
-        onClick={() => loginWithRedirect({
-            authorizationParams: {
-                redirect_uri: `${window.location.origin}/dashboard`,
-            },
-        }) }>
-            Log In/Register
-        </button>
-    );
+        <Link to="/Login"
+        className="bg-indigo-500 hover:bg-indigo-700 active:bg-indigo-900 text-white px-4 py-1 rounded-md transition focus:ring-2 focus:ring-indigo-400">
+            Login
+        </Link>
+    )
 }
 
 export default LoginButton;

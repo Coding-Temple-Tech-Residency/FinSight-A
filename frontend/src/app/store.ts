@@ -3,6 +3,7 @@ import chatReducer from "../features/chat/chatSlice";
 import marketReducer from "../features/market/marketSlice";
 import profileReducer from "../features/profile/profileSlice";
 import watchlistReducer from "../features/watchlist/watchlistSlice";
+import landingReducer from "../features/landing/landingSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,11 @@ export const store = configureStore({
     market: marketReducer,
     profile: profileReducer,
     watchlist: watchlistReducer,
+    landing: landingReducer    
+
+// export const store = configureStore({
+//   reducer: {
+//     watchlist: watchlistReducer,
   },
 });
 

@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom"
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth } from "../context/AuthContext";
 import LogoutButton from "./LogoutButton";
 import LoginButton from "./LoginButton";
+import SignupButton from "./SignupButton";
 
 function Navbar() {
-    const { isAuthenticated, user } = useAuth0();
+    const { user } = useAuth();
     return (
         <nav className='bg-gray-900 text-white px-6 py-4'>
             <div className='max-w-7xl mx-auto flex items-center justify-between'>
@@ -21,13 +22,16 @@ function Navbar() {
                 </div>
                 <div>
 
-                    {isAuthenticated && (
-                        <span>{user?.name}</span>
+                    {user && (
+                        <span>{user?.email}</span>
                     )}
-                    {isAuthenticated ? (
+                    {user ? (
                         <LogoutButton />
                     ) : (
+                        <>
+                        <SignupButton />
                         <LoginButton />
+                        </>
                     )}
                 </div>
             </div>
