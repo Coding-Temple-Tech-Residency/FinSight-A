@@ -30,45 +30,40 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: "2rem auto", padding: "0 1rem" }}>
-      <h1>Watchlist</h1>
+    <div className="max-w-xl mx-auto mt-8 px-4">
+      <h1 className="text-3xl font-bold text-slate-800 mb-6">Watchlist</h1>
 
       <form onSubmit={handleAdd} style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ticker symbol (e.g. AAPL)"
-          style={{ flex: 1, padding: "0.4rem 0.75rem", fontSize: "1rem" }}
+          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-base focus:outline-none focuse:ring-2 focus:ring-cyan-500"
         />
-        <button type="submit" disabled={status === "loading"}>
+        <button type="submit" disabled={status === "loading"}
+        className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed">
           Add
         </button>
       </form>
 
-      {addError && <p style={{ color: "red" }}>{addError}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {addError && <p className="text-red-600 mb-4">{addError}</p>}
+      {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      {status === "loading" && items.length === 0 && <p>Loading...</p>}
+      {status === "loading" && items.length === 0 && <p className="text-slate-500">Loading...</p>}
 
       {items.length === 0 && status !== "loading" ? (
-        <p>Your watchlist is empty. Add a ticker above.</p>
+        <p className="text-slate-500">Your watchlist is empty. Add a ticker above.</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {items.map((item) => (
             <li
               key={item.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "0.5rem 0",
-                borderBottom: "1px solid #eee",
-              }}
+              className="fles justify-between items-center px-4 py-3 bg-white border border-slate-200 rounded-lg shadow-sm"
             >
-              <span style={{ fontWeight: 600 }}>{item.symbol}</span>
+              <span className="font-semibold text-slate-900">{item.symbol}</span>
               <button
                 onClick={() => dispatch(removeFromWatchlist(item.symbol))}
-                style={{ color: "red", background: "none", border: "none", cursor: "pointer" }}
+                className="text-red-600 hover:text-red-800 font-medium bg-transparent border-none cursor-pointer"
               >
                 Remove
               </button>

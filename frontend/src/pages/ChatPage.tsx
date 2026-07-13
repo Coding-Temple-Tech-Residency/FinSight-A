@@ -22,22 +22,15 @@ export default function ChatPage() {
 
   return (
     <div
-      style={{
-        maxWidth: 680,
-        margin: "2rem auto",
-        padding: "0 1rem",
-        display: "flex",
-        flexDirection: "column",
-        height: "calc(100vh - 6rem)",
-      }}
+      className="mx-auto mt-8 flex h-[calc(100vh-6rem)] max-w-3xl flex-col px-4"
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h1 style={{ margin: 0 }}>FinSight AI</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-slate-900">FinSight AI</h1>
         {messages.length > 0 && (
           <button
             type="button"
             onClick={() => dispatch(clearChat())}
-            style={{ fontSize: "0.85rem", padding: "0.25rem 0.75rem" }}
+            className="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium transition hover:bg-slate-100"
           >
             Clear
           </button>
@@ -45,17 +38,10 @@ export default function ChatPage() {
       </div>
 
       <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.75rem",
-          padding: "0.5rem 0",
-        }}
+       className="flex flex-1 flex-col gap-3 overflow-y-auto py-2"
       >
         {messages.length === 0 && status !== "loading" && (
-          <p style={{ color: "#888", textAlign: "center", marginTop: "2rem" }}>
+          <p className="mt-8 text-center text-slate-500">
             Ask me anything about your investments.
           </p>
         )}
@@ -63,17 +49,11 @@ export default function ChatPage() {
         {messages.map((msg, i) => (
           <div
             key={i}
-            style={{
-              alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
-              maxWidth: "80%",
-              padding: "0.6rem 1rem",
-              borderRadius: msg.role === "user" ? "1rem 1rem 0.25rem 1rem" : "1rem 1rem 1rem 0.25rem",
-              background: msg.role === "user" ? "#2563eb" : "#e5e7eb",
-              color: msg.role === "user" ? "#fff" : "#111",
-              fontSize: "0.95rem",
-              lineHeight: 1.5,
-              whiteSpace: "pre-wrap",
-            }}
+            className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
+            msg.role === 'user'
+            ? "self-end rounded-br-md bg-indigo-600 text-white"
+            : "self-start rounded-bl-md bg-slate-200 text-slate-900"
+            }`}
           >
             {msg.content}
           </div>
@@ -81,39 +61,32 @@ export default function ChatPage() {
 
         {status === "loading" && (
           <div
-            style={{
-              alignSelf: "flex-start",
-              padding: "0.6rem 1rem",
-              borderRadius: "1rem 1rem 1rem 0.25rem",
-              background: "#e5e7eb",
-              color: "#555",
-              fontSize: "0.9rem",
-            }}
+            className="self-start rounded-2xl rounded-bl-md bg-slate-200 px-4 py-3 text-sm text-slate-500"
           >
             Thinking…
           </div>
         )}
 
-        {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+        {error && <p className="text-center text-red-500">{error}</p>}
 
         <div ref={bottomRef} />
       </div>
 
       <form
         onSubmit={handleSubmit}
-        style={{ display: "flex", gap: "0.5rem", paddingTop: "0.75rem" }}
+        className="flex gap-2 border-t border-slate-200 pt-3"
       >
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask a finance question…"
           disabled={status === "loading"}
-          style={{ flex: 1, padding: "0.5rem 0.875rem", fontSize: "1rem", borderRadius: "0.5rem", border: "1px solid #d1d5db" }}
+          className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-base focus:border-indigo-500 focus:outline-none focus:ring-2 foucs:ring-indigo-500 disabled:bg-slate-50"
         />
         <button
           type="submit"
           disabled={!input.trim() || status === "loading"}
-          style={{ padding: "0.5rem 1.25rem", fontSize: "1rem", borderRadius: "0.5rem" }}
+          className="rounded-lg bg-indigo-600 px-5 py-2 font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Send
         </button>
