@@ -36,9 +36,9 @@ function LoginPage() {
         }
     }
     return (
-        <div>
-            <h1>FinSight Dashboard Login</h1>
-            <div className='flix min-h-screen items-center justify-center'>
+        <div className='bg-slate-900 min-h-screen'> 
+            <h1 className='text-slate-50 p-8 text-center text-4xl font-bold'>FinSight Dashboard Login</h1>
+            <div className='flex items-center justify-center'>
                 <form
                 onSubmit={handleSubmit}
                 className='w-full max-w-md rounded-lg bg-slate-50 p-8 shadow-md'

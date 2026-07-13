@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { clearChat, sendMessage } from "../features/chat/chatSlice";
 
 export default function ChatPage() {
