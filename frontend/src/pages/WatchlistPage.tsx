@@ -33,12 +33,12 @@ export default function WatchlistPage() {
     <div className="max-w-xl mx-auto mt-8 px-4">
       <h1 className="text-3xl font-bold text-slate-800 mb-6">Watchlist</h1>
 
-      <form onSubmit={handleAdd} style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
+      <form onSubmit={handleAdd} className="flex gap-2 mb-6">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ticker symbol (e.g. AAPL)"
-          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-base focus:outline-none focuse:ring-2 focus:ring-cyan-500"
+          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-cyan-500"
         />
         <button type="submit" disabled={status === "loading"}
         className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -54,11 +54,11 @@ export default function WatchlistPage() {
       {items.length === 0 && status !== "loading" ? (
         <p className="text-slate-500">Your watchlist is empty. Add a ticker above.</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <ul className="space-y">
           {items.map((item) => (
             <li
               key={item.id}
-              className="fles justify-between items-center px-4 py-3 bg-white border border-slate-200 rounded-lg shadow-sm"
+              className="flex justify-between items-center px-4 py-3 bg-white border border-slate-200 rounded-lg shadow-sm"
             >
               <span className="font-semibold text-slate-900">{item.symbol}</span>
               <button

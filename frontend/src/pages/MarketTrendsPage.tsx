@@ -89,7 +89,7 @@ export default function MarketTrendsPage() {
             className="flex-1 rounded-md border border-slate-100 px-3 py-2 text-base focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-600"
           />
           <button type="submit" disabled={quoteStatus === "loading"}
-          className="round-md big-indigo-400 px-4 py-2 font-medium text-slate-50 transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50">
+          className="rounded-md bg-indigo-400 px-4 py-2 font-medium text-slate-50 transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50">
             {quoteStatus === "loading" ? "Loading..." : "Look up"}
           </button>
         </form>
