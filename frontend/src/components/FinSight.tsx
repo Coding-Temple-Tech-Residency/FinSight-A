@@ -2,9 +2,9 @@
 
 export default function FinSight() {
   return (
-    <div className="rounded-xl max-h-[450px] border border[#24354D] bg-[#101C31] p-3">
+    <div className="rounded-xl max-h-[500px] border border[#24354D] bg-[#101C31] p-3">
       <div className="mb-6 flex justify-between">
-        <h2 className="text-xl">🦈 FinSight™️  Insight ✨</h2>
+        <h2 className="text-xl">FinSight™️  Insight ✨</h2>
 
         <span className="rounded bg-[#6c63ff] px-3 py-2 text-sm">
           FinSight ™️
