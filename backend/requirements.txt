@@ -26,3 +26,4 @@ requests>=2.32.0
 # Testing (Sprint 3)
 pytest>=9.1.1
 pytest-asyncio>=1.4.0
+slowapi>=0.1.10

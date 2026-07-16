@@ -43,7 +43,13 @@ def db_session():
 
 @pytest.fixture(scope="function")
 def client(db_session):
-    """FastAPI test client with test database override."""
+    """FastAPI test client with test database override.
+
+    Disables rate limiting so unit tests can hammer auth endpoints
+    without tripping the per-IP limits configured in production.
+    """
+    from app.core.limiter import limiter
+
     def override_get_db():
         try:
             yield db_session
@@ -51,8 +57,11 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
+    limiter.enabled = False
     with TestClient(app) as test_client:
         yield test_client
+    limiter.enabled = True
+    limiter.reset()
     app.dependency_overrides.clear()
 
 

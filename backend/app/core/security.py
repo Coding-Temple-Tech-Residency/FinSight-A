@@ -42,11 +42,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(
     subject: str,
     expires_delta: Optional[timedelta] = None,
+    token_type: str = "session",
 ) -> str:
     """
     Create a signed JWT access token.
     `subject` is typically the user ID (placed in the 'sub' claim).
     Token expires after JWT_ACCESS_TOKEN_EXPIRE_MINUTES (from .env) by default.
+
+    `token_type` distinguishes normal login sessions ("session") from
+    password-reset tokens ("password_reset"), so a reset token cannot
+    be reused as a login session (see API-A2 security finding).
     """
     if expires_delta is None:
         expires_delta = timedelta(minutes=settings.jwt_access_token_expire_minutes)
@@ -57,6 +62,7 @@ def create_access_token(
         "sub": str(subject),
         "exp": expire,
         "iat": datetime.now(timezone.utc),
+        "type": token_type,
     }
 
     return jwt.encode(

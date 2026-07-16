@@ -6,6 +6,10 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.exceptions import RequestValidationError
 from starlette.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+from app.core.limiter import limiter
 
 from app.core.config import get_settings
 from app.core.database import Base, engine
@@ -31,6 +35,10 @@ app = FastAPI(
     description="AI-Powered Investment Intelligence Platform",
     lifespan=lifespan,
 )
+
+# Attach the rate limiter to the app and register the 429 handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # "testserver" is required for FastAPI TestClient (pytest) to work
 app.add_middleware(

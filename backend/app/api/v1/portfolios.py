@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.logging import logger
 from app.models.user import User
 from app.core.database import get_db
 from app.models.portfolio import Portfolio, Holding, Transaction
@@ -72,7 +73,8 @@ async def create_portfolio(
         return PortfolioResponse.model_validate(portfolio)
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.get(
@@ -94,7 +96,8 @@ async def list_portfolios(
             portfolio_responses.append(response)
         return PortfolioListResponse(portfolios=portfolio_responses, total=len(portfolio_responses))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.get(
@@ -123,7 +126,8 @@ async def get_portfolio(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.patch(
@@ -159,7 +163,8 @@ async def update_portfolio(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.delete(
@@ -189,7 +194,8 @@ async def delete_portfolio(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 # ==========================================
@@ -240,7 +246,8 @@ async def create_holding(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.get(
@@ -271,7 +278,8 @@ async def list_holdings(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.patch(
@@ -316,7 +324,8 @@ async def update_holding(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.delete(
@@ -355,7 +364,8 @@ async def delete_holding(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 # ==========================================
@@ -405,7 +415,8 @@ async def create_transaction(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.get(
@@ -446,4 +457,5 @@ async def list_transactions(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")

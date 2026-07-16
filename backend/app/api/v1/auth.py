@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, EmailStr
@@ -7,6 +7,7 @@ from datetime import timedelta
 from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
 from app.schemas.auth import UserResponse, UserSignup, UserProfileUpdate
@@ -58,7 +59,9 @@ def _set_auth_cookie(response: Response, token: str) -> None:
         400: {"description": "Email already registered"},
     },
 )
+@limiter.limit("5/minute")
 def signup(
+    request: Request,
     payload: UserSignup,
     response: Response,
     db: Session = Depends(get_db),
@@ -105,7 +108,9 @@ def signup(
         403: {"description": "User account is inactive"},
     },
 )
+@limiter.limit("5/minute")
 def login(
+    request: Request,
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
@@ -230,8 +235,10 @@ def update_me(
         404: {"description": "User not found"},
     },
 )
+@limiter.limit("3/minute")
 def forgot_password(
-    request: ForgotPasswordRequest,
+    request: Request,
+    payload: ForgotPasswordRequest,
     db: Session = Depends(get_db),
 ):
     """
@@ -242,7 +249,7 @@ def forgot_password(
     Returns a JWT token valid for 24 hours. In production, this would be
     emailed to the user instead of returned directly.
     """
-    user = db.query(User).filter(User.email == request.email).first()
+    user = db.query(User).filter(User.email == payload.email).first()
     
     if not user:
         raise HTTPException(
@@ -250,7 +257,11 @@ def forgot_password(
             detail="User not found"
         )
     
-    reset_token = create_access_token(subject=user.id, expires_delta=timedelta(hours=24))
+    reset_token = create_access_token(
+        subject=user.id,
+        expires_delta=timedelta(hours=24),
+        token_type="password_reset",
+    )
     
     return {
         "message": "Reset token sent to email",
@@ -269,8 +280,10 @@ def forgot_password(
         404: {"description": "User not found"},
     },
 )
+@limiter.limit("5/minute")
 def reset_password(
-    request: ResetPasswordRequest,
+    request: Request,
+    payload: ResetPasswordRequest,
     db: Session = Depends(get_db),
 ) -> User:
     """
@@ -284,13 +297,22 @@ def reset_password(
     try:
         import jwt
         
-        payload = jwt.decode(
-            request.reset_token,
+        token_payload = jwt.decode(
+            payload.reset_token,
             settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm]
         )
         
-        user_id = payload.get("sub")
+        # Reject tokens that aren't password-reset tokens (e.g. a
+        # regular session token) so a login session can't be misused
+        # to reset a password, and vice versa. See API-A2.
+        if token_payload.get("type") != "password_reset":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid token"
+            )
+        
+        user_id = token_payload.get("sub")
         user = db.query(User).filter(User.id == user_id).first()
         
         if not user:
@@ -299,7 +321,7 @@ def reset_password(
                 detail="User not found"
             )
         
-        user.password_hash = hash_password(request.new_password)
+        user.password_hash = hash_password(payload.new_password)
         db.commit()
         db.refresh(user)
         
