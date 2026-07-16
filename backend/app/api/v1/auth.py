@@ -9,7 +9,7 @@ from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
-from app.schemas.auth import UserResponse, UserSignup
+from app.schemas.auth import UserResponse, UserSignup, UserProfileUpdate
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -81,6 +81,9 @@ def signup(
     user = User(
         email=payload.email,
         password_hash=hash_password(payload.password),
+        first_name=payload.first_name,
+        last_name=payload.last_name,
+        username=payload.username,
     )
     db.add(user)
     db.commit()
@@ -164,6 +167,47 @@ def get_me(current_user: User = Depends(get_current_user)) -> User:
     
     Requires valid JWT token in httpOnly cookie.
     """
+    return current_user
+
+
+@router.patch(
+    "/me",
+    response_model=UserResponse,
+    summary="Update current user's profile",
+    responses={
+        200: {"description": "Profile updated"},
+        400: {"description": "Username already taken"},
+        401: {"description": "Not authenticated"},
+    },
+)
+def update_me(
+    payload: UserProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> User:
+    """
+    Update the current user's profile fields (first name, last name, username).
+    
+    Only provided fields are updated; omitted fields are left unchanged.
+    """
+    if payload.username is not None and payload.username != current_user.username:
+        existing = db.query(User).filter(User.username == payload.username).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken",
+            )
+        current_user.username = payload.username
+
+    if payload.first_name is not None:
+        current_user.first_name = payload.first_name
+
+    if payload.last_name is not None:
+        current_user.last_name = payload.last_name
+
+    db.commit()
+    db.refresh(current_user)
+
     return current_user
 
 
