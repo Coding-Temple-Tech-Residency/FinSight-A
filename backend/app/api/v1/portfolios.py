@@ -120,7 +120,7 @@ async def get_portfolio(
     """Get portfolio with all holdings."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -150,7 +150,7 @@ async def update_portfolio(
     """Update portfolio name or description."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -185,7 +185,7 @@ async def delete_portfolio(
     """Delete portfolio and all its holdings/transactions."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -221,7 +221,7 @@ async def create_holding(
     """Manually add a holding to portfolio."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -229,7 +229,7 @@ async def create_holding(
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         existing = db.query(Holding).filter_by(
-            portfolio_id=portfolio_id,
+            portfolio_id=str(portfolio_id),
             symbol=req.symbol
         ).first()
         
@@ -237,7 +237,7 @@ async def create_holding(
             raise HTTPException(status_code=409, detail=f"Holding for {req.symbol} already exists")
         
         holding = Holding(
-            portfolio_id=portfolio_id,
+            portfolio_id=str(portfolio_id),
             symbol=req.symbol,
             quantity=req.quantity,
             avg_cost=req.avg_cost
@@ -264,16 +264,22 @@ async def list_holdings(
     db: Session = Depends(get_db),
 ):
     """List all holdings in portfolio."""
+    print("=== LIST HOLDINGS HIT ===")
+    print("portfolio_id:", portfolio_id)
+    print("portfolio_id type:", type(portfolio_id))
+    print("current_user.id:", current_user.id)
+    print("current_user.id type:", type(current_user.id))
+
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
         if not portfolio:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
-        holdings = db.query(Holding).filter_by(portfolio_id=portfolio_id).all()
+        holdings = db.query(Holding).filter_by(portfolio_id=str(portfolio_id)).all()
         return HoldingListResponse(
             holdings=[HoldingResponse.from_orm(h) for h in holdings],
             total=len(holdings)
@@ -296,20 +302,31 @@ async def update_holding(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    
+    print()
+    print("===== UPDATE HOLDING =====")
+    print(f"portfolio_id: {portfolio_id}")
+    print(f"holding_id: {holding_id}")
+    print(f"user id: {current_user.id}")
+    print()
     """Update holding quantity or average cost."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
+
+        print(portfolio)
         
         if not portfolio:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         holding = db.query(Holding).filter_by(
-            id=holding_id,
-            portfolio_id=portfolio_id
+            id=str(holding_id),
+            portfolio_id=str(portfolio_id)
         ).first()
+
+        print(holding)
         
         if not holding:
             raise HTTPException(status_code=404, detail="Holding not found")
@@ -343,7 +360,7 @@ async def delete_holding(
     """Delete a holding from portfolio."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -351,8 +368,8 @@ async def delete_holding(
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         holding = db.query(Holding).filter_by(
-            id=holding_id,
-            portfolio_id=portfolio_id
+            id=str(holding_id),
+            portfolio_id=str(portfolio_id)
         ).first()
         
         if not holding:
@@ -391,7 +408,7 @@ async def create_transaction(
     """
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -399,7 +416,7 @@ async def create_transaction(
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         transaction = Transaction(
-            portfolio_id=portfolio_id,
+            portfolio_id=str(portfolio_id),
             symbol=req.symbol,
             type=req.type,
             quantity=req.quantity,
@@ -431,7 +448,7 @@ async def list_transactions(
     """List transactions with pagination."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -439,10 +456,10 @@ async def list_transactions(
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         offset = (page - 1) * limit
-        total = db.query(Transaction).filter_by(portfolio_id=portfolio_id).count()
+        total = db.query(Transaction).filter_by(portfolio_id=str(portfolio_id)).count()
         
         transactions = db.query(Transaction).filter_by(
-            portfolio_id=portfolio_id
+            portfolio_id=str(portfolio_id)
         ).order_by(Transaction.traded_at.desc()).offset(offset).limit(limit).all()
         
         return TransactionListResponse(

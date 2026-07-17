@@ -19,6 +19,7 @@ function Navbar() {
                     <Link to='/profile'>Profile</Link>
                     <Link to='/watchlist'>Watchlist</Link>
                     <Link to='/chat'>AI Chat</Link>
+                    <Link to='/portfolio'>Portfolio</Link>
                 </div>
                 <div className="flex items-center gap-4">
 
