@@ -9,12 +9,18 @@ export interface ChatMessage {
 
 interface ChatState {
   messages: ChatMessage[];
+  insight: string | null;
+  best: string | null;
+  attention: string | null;
   status: "idle" | "loading" | "error";
   error: string | null;
 }
 
 const initialState: ChatState = {
   messages: [],
+  insight: null,
+  best: null,
+  attention: null,
   status: "idle",
   error: null,
 };
@@ -31,7 +37,7 @@ export const sendMessage = createAsyncThunk(
     if (!res.ok) return rejectWithValue("Failed to get a response.");
     const data = await res.json();
     return { userMessage: message, reply: data.reply as string };
-  }
+  },
 );
 
 const chatSlice = createSlice({
@@ -53,7 +59,23 @@ const chatSlice = createSlice({
       })
       .addCase(sendMessage.fulfilled, (state, action) => {
         state.status = "idle";
-        state.messages.push({ role: "assistant", content: action.payload.reply });
+
+        state.messages.push({
+          role: "assistant",
+          content: action.payload.reply,
+        });
+
+        const response = action.payload.reply;
+
+        state.insight =
+          response.match(/Insight:\s*([\s\S]*?)\n\s*Best:/)?.[1].trim() ?? null;
+
+        state.best =
+          response.match(/Best:\s*([\s\S]*?)\n\s*Attention:/)?.[1].trim() ??
+          null;
+
+        state.attention =
+          response.match(/Attention:\s*([\s\S]*)/)?.[1].trim() ?? null;
       })
       .addCase(sendMessage.rejected, (state, action) => {
         state.status = "idle";

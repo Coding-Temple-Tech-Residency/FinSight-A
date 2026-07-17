@@ -1,14 +1,16 @@
 // FinSight-A/frontend/src/components/PortfolioHighlights.tsx
 
+import { useAppSelector } from "../app/hooks";
+
 export default function PortfolioHighlights() {
+  const { best, attention } = useAppSelector((state) => state.chat);
+
   return (
     <div className="rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-1">
       <div className="mb-1 flex items-center gap-5">
         <span className="text-[24px]">💼</span>
 
-        <h2 className="text-white">
-          Portfolio Highlights
-        </h2>
+        <h2 className="text-white">Portfolio Highlights</h2>
       </div>
 
       <div className="space-y-2">
@@ -22,10 +24,7 @@ export default function PortfolioHighlights() {
               Best Performer
             </h3>
 
-            <p className="mt-1 text-[12px] text-gray-300">
-              NVIDIA (NVDA) leads your portfolio with a +28.4% gain over the
-              past year.
-            </p>
+            <p className="mt-1 text-[12px] text-gray-300">{best}</p>
           </div>
         </article>
 
@@ -39,10 +38,7 @@ export default function PortfolioHighlights() {
               Needs Attention
             </h3>
 
-            <p className="mt-1 text-[12px] text-gray-300">
-              Tesla (TSLA) has declined 12.3% this quarter and is your weakest
-              current position.
-            </p>
+            <p className="mt-1 text-[12px] text-gray-300">{attention}</p>
           </div>
         </article>
       </div>
