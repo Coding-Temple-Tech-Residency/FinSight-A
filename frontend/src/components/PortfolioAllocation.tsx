@@ -1,15 +1,32 @@
 // FinSight-A/frontend/src/components/PortfolioAllocation.tsx
 
-const allocations = [
-  { sector: "Technology", percentage: 56.2 },
-  { sector: "Consumer Cyclical", percentage: 18.7 },
-  { sector: "Healthcare", percentage: 9.4 },
-  { sector: "Financials", percentage: 6.8 },
-  { sector: "Consumer Staples", percentage: 5.6 },
-  { sector: "Other", percentage: 3.3 },
-];
+import { useAppSelector } from "../app/hooks";
 
 export default function PortfolioAllocation() {
+  const { portfolio, quotes } = useAppSelector((state) => state.portfolio);
+
+  const holdings =
+    portfolio?.holdings.map((holding) => {
+      const quote = quotes[holding.symbol];
+
+      const currentPrice = Number(quote?.price ?? 0);
+      const quantity = Number(holding.quantity);
+
+      return {
+        symbol: holding.symbol,
+        value: quantity * currentPrice,
+      };
+    }) ?? [];
+
+  const totalValue = holdings.reduce((sum, holding) => sum + holding.value, 0);
+
+  const allocations = holdings
+    .map((holding) => ({
+      symbol: holding.symbol,
+      percentage: totalValue === 0 ? 0 : (holding.value / totalValue) * 100,
+    }))
+    .sort((a, b) => b.percentage - a.percentage);
+
   return (
     <section className="rounded-lg border border-slate-700 bg-[#091827] p-5 h-110">
       {/* Header */}
@@ -30,16 +47,11 @@ export default function PortfolioAllocation() {
       {/* Allocation List */}
       <div className="space-y-5">
         {allocations.map((item) => (
-          <div
-            key={item.sector}
-            className="flex items-center justify-between"
-          >
+          <div key={item.symbol} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 rounded-full bg-cyan-400" />
 
-              <span className="text-slate-200">
-                {item.sector}
-              </span>
+              <span className="text-slate-200">{item.symbol}</span>
             </div>
 
             <span className="text-slate-300">
@@ -54,13 +66,9 @@ export default function PortfolioAllocation() {
 
       {/* Total */}
       <div className="flex items-center justify-between text-lg">
-        <span className="font-medium text-white">
-          Total
-        </span>
+        <span className="font-medium text-white">Total</span>
 
-        <span className="font-semibold text-white">
-          100.0%
-        </span>
+        <span className="font-semibold text-white">100.0%</span>
       </div>
     </section>
   );
