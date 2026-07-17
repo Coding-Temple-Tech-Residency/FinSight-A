@@ -14,8 +14,10 @@ from app.core.limiter import limiter
 from app.core.config import get_settings
 from app.core.database import Base, engine
 from app.core.logging import logger, log_error
-from app.models import user
-from app.models import portfolio
+from app.models import user  # noqa: F401 — register model with Base
+from app.models import portfolio  # noqa: F401 — register portfolio models
+from app.models import user_settings  # noqa: F401 — register user settings model
+from app.models import watchlist  # noqa: F401 — register watchlist model
 from app.api.v1.router import router as api_router
 
 settings = get_settings()
@@ -95,6 +97,8 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(InputValidationMiddleware)
 
+
+# Register routers
 app.include_router(api_router)
 
 @app.get("/")

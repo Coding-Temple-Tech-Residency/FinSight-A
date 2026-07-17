@@ -170,6 +170,7 @@ def create_transaction(
     Buy: increase quantity, recalculate avg_cost
     Sell: decrease quantity, keep avg_cost same
     """
+    # 1. Create transaction record
     transaction = Transaction(
         portfolio_id=portfolio_id,
         symbol=symbol,
@@ -180,21 +181,27 @@ def create_transaction(
     db.add(transaction)
     db.flush()
     
+    # 2. Auto-update holding
     holding = get_or_create_holding(portfolio_id, symbol, db)
     
     if trans_type == "buy":
+        # Recalculate avg_cost (weighted average)
         if holding.avg_cost is None or holding.quantity == 0:
+            # First buy or no previous quantity
             holding.avg_cost = price_at_trade
             holding.quantity = quantity
         else:
+            # Weighted average: (old_qty * old_cost + new_qty * new_cost) / total_qty
             old_total_cost = holding.quantity * holding.avg_cost
             new_total_cost = quantity * price_at_trade
             holding.quantity += quantity
             holding.avg_cost = (old_total_cost + new_total_cost) / holding.quantity
     
     elif trans_type == "sell":
+        # Just reduce quantity, avg_cost stays same
         holding.quantity -= quantity
         
+        # Delete holding if quantity becomes 0
         if holding.quantity <= 0:
             db.delete(holding)
     

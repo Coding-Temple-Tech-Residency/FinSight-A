@@ -9,6 +9,7 @@ Portfolio domain FastAPI routes.
 All routes require JWT authentication and verify user ownership.
 """
 
+
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -43,6 +44,7 @@ router = APIRouter(
         404: {"model": ErrorResponse, "description": "Not found"},
     }
 )
+
 
 
 # ==========================================
@@ -392,6 +394,7 @@ async def create_transaction(
     quantity reduction on sell).
     """
     from app.services.portfolio import create_transaction as create_transaction_service
+
 
     try:
         portfolio = db.query(Portfolio).filter_by(
