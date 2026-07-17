@@ -49,28 +49,32 @@ export default function ProfilePage() {
   if (status === "loading") return <div>Loading...</div>;
 
   return (
-    <div style={{ maxWidth: 480, margin: "2rem auto", padding: "0 1rem" }}>
-      <h1>Profile</h1>
+    <div className="mx-auto mt-8 max-w-2xl px-4">
+      <h1 className="mb-6 text-3xl font-bold text-slate-900">Profile</h1>
 
       {profile && (
-        <section style={{ marginBottom: "1.5rem" }}>
-          <p><strong>Email:</strong> {profile.email}</p>
-          <p><strong>Member since:</strong> {new Date(profile.created_at).toLocaleDateString()}</p>
+        <section className="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold">Account Information</h2>
+          <div className="space-y-2 text-slate-700">
+          <p><span className="font-semibold">Email:</span> {profile.email}</p>
+          <p><span className="font-semibold">Member since:</span> {new Date(profile.created_at).toLocaleDateString()}</p>
+          </div>
         </section>
       )}
 
-      <form onSubmit={handleSave}>
-        <h2>Preferences</h2>
+      <form onSubmit={handleSave}
+      className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-6 text-xl font-semibold">Preferences</h2>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="theme" style={{ display: "block", marginBottom: "0.25rem" }}>
+        <div className="mb-5">
+          <label htmlFor="theme" className="mb-2 block font-medium text-slate-700">
             Theme
           </label>
           <select
             id="theme"
             value={theme}
             onChange={(e) => setTheme(e.target.value as "light" | "dark" | "system")}
-            style={{ padding: "0.4rem", fontSize: "1rem" }}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
@@ -78,25 +82,26 @@ export default function ProfilePage() {
           </select>
         </div>
 
-        <div style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <div className="mb-5 flex items-center gap-3">
           <input
             id="dayTrader"
             type="checkbox"
             checked={isDayTrader}
             onChange={(e) => setIsDayTrader(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
           />
-          <label htmlFor="dayTrader">Day Trader mode</label>
+          <label htmlFor="dayTrader" className="font-medium text-slate-700">Day Trader mode</label>
         </div>
 
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label htmlFor="aiInterval" style={{ display: "block", marginBottom: "0.25rem" }}>
+        <div className="mb-6">
+          <label htmlFor="aiInterval" className="mb-2 block font-medium text-slate-700">
             AI refresh interval
           </label>
           <select
             id="aiInterval"
             value={aiInterval}
             onChange={(e) => setAiInterval(Number(e.target.value))}
-            style={{ padding: "0.4rem", fontSize: "1rem" }}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             {AI_INTERVAL_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -106,17 +111,20 @@ export default function ProfilePage() {
           </select>
         </div>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {saved && <p style={{ color: "green" }}>Settings saved.</p>}
+        {error && <p className="mb-4 text-red-500">{error}</p>}
+        {saved && <p className="mb-4 text-green-500">Settings saved.</p>}
 
-        <button type="submit" disabled={status === "saving"}>
+        <button type="submit" disabled={status === "saving"}
+        className="rounded-lg bg-indigo-600 px-5 py-2 font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
           {status === "saving" ? "Saving..." : "Save preferences"}
         </button>
       </form>
 
-      <section style={{ marginTop: "2rem" }}>
-        <h2>Account</h2>
-        <button type="button">Change Password</button>
+      <section className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-xl font-semibold">Account</h2>
+        <button type="button"
+        className="rounded-lg border border-slate-300 px-5 py-2 font-medium transition hover:bg-slate-100">
+          Change Password</button>
       </section>
     </div>
   );
