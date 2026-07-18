@@ -31,6 +31,12 @@ def get_current_user(
     if payload is None:
         raise credentials_exception
 
+    # Reject non-session tokens (e.g. password-reset tokens) so a
+    # reset token cannot be used to authenticate as a full session.
+    # See API-A2 security finding.
+    if payload.get("type") != "session":
+        raise credentials_exception
+
     user_id = payload.get("sub")
     if user_id is None:
         raise credentials_exception

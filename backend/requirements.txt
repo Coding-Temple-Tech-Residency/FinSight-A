@@ -19,3 +19,11 @@ python-multipart>=0.0.12
 # HTTP client (Alpha Vantage, Groq — Sprint 2)
 httpx>=0.27.2
 bcrypt>=4.0
+gunicorn==26.0.0
+python-json-logger>=2.0.7
+requests>=2.32.0
+
+# Testing (Sprint 3)
+pytest>=9.1.1
+pytest-asyncio>=1.4.0
+slowapi>=0.1.10
