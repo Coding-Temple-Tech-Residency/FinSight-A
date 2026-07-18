@@ -9,7 +9,7 @@ Handles:
 
 from uuid import UUID
 from decimal import Decimal
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.portfolio import Portfolio, Holding, Transaction
 
@@ -32,13 +32,22 @@ def create_portfolio(user_id: str, name: str, description: str = None, db: Sessi
 
 
 def get_user_portfolios(user_id: str, db: Session) -> list:
-    """Get all portfolios for a user."""
-    return db.query(Portfolio).filter_by(user_id=user_id).all()
+    """
+    Get all portfolios for a user, with holdings pre-loaded.
+    
+    Uses joinedload to avoid N+1 query problem when accessing
+    portfolio.holdings later (e.g., in dashboard aggregation).
+    """
+    return db.query(Portfolio).options(
+        joinedload(Portfolio.holdings)
+    ).filter_by(user_id=user_id).all()
 
 
 def get_portfolio(portfolio_id: str, user_id: str, db: Session) -> Portfolio:
-    """Get portfolio (with ownership check)."""
-    return db.query(Portfolio).filter_by(
+    """Get portfolio (with ownership check), holdings pre-loaded."""
+    return db.query(Portfolio).options(
+        joinedload(Portfolio.holdings)
+    ).filter_by(
         id=portfolio_id,
         user_id=user_id
     ).first()

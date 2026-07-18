@@ -9,15 +9,16 @@ Portfolio domain FastAPI routes.
 All routes require JWT authentication and verify user ownership.
 """
 
-from uuid import UUID
+
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.logging import logger
 from app.models.user import User
-from app.core.database import SessionLocal
+from app.core.database import get_db
 from app.models.portfolio import Portfolio, Holding, Transaction
 from app.schemas.portfolio import (
     PortfolioCreate,
@@ -45,14 +46,6 @@ router = APIRouter(
 )
 
 
-def get_db():
-    """Get database session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 # ==========================================
 # PORTFOLIO ENDPOINTS
@@ -79,10 +72,11 @@ async def create_portfolio(
         db.add(portfolio)
         db.commit()
         db.refresh(portfolio)
-        return PortfolioResponse.from_orm(portfolio)
+        return PortfolioResponse.model_validate(portfolio)
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.get(
@@ -99,12 +93,13 @@ async def list_portfolios(
         portfolios = db.query(Portfolio).filter_by(user_id=current_user.id).all()
         portfolio_responses = []
         for p in portfolios:
-            response = PortfolioResponse.from_orm(p)
+            response = PortfolioResponse.model_validate(p)
             response.holdings_count = len(p.holdings) if p.holdings else 0
             portfolio_responses.append(response)
         return PortfolioListResponse(portfolios=portfolio_responses, total=len(portfolio_responses))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.get(
@@ -113,27 +108,28 @@ async def list_portfolios(
     summary="Get portfolio with holdings",
 )
 async def get_portfolio(
-    portfolio_id: UUID,
+    portfolio_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Get portfolio with all holdings."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
         if not portfolio:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
-        response = PortfolioWithHoldings.from_orm(portfolio)
-        response.holdings = [HoldingResponse.from_orm(h) for h in portfolio.holdings]
+        response = PortfolioWithHoldings.model_validate(portfolio)
+        response.holdings = [HoldingResponse.model_validate(h) for h in portfolio.holdings]
         return response
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.patch(
@@ -142,7 +138,7 @@ async def get_portfolio(
     summary="Update portfolio",
 )
 async def update_portfolio(
-    portfolio_id: UUID,
+    portfolio_id: str,
     req: PortfolioUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -150,7 +146,7 @@ async def update_portfolio(
     """Update portfolio name or description."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -164,12 +160,13 @@ async def update_portfolio(
         
         db.commit()
         db.refresh(portfolio)
-        return PortfolioResponse.from_orm(portfolio)
+        return PortfolioResponse.model_validate(portfolio)
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.delete(
@@ -178,14 +175,14 @@ async def update_portfolio(
     summary="Delete portfolio",
 )
 async def delete_portfolio(
-    portfolio_id: UUID,
+    portfolio_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Delete portfolio and all its holdings/transactions."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -199,7 +196,8 @@ async def delete_portfolio(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 # ==========================================
@@ -213,7 +211,7 @@ async def delete_portfolio(
     summary="Add holding to portfolio",
 )
 async def create_holding(
-    portfolio_id: UUID,
+    portfolio_id: str,
     req: HoldingCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -221,7 +219,7 @@ async def create_holding(
     """Manually add a holding to portfolio."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -229,7 +227,7 @@ async def create_holding(
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         existing = db.query(Holding).filter_by(
-            portfolio_id=portfolio_id,
+            portfolio_id=str(portfolio_id),
             symbol=req.symbol
         ).first()
         
@@ -237,7 +235,7 @@ async def create_holding(
             raise HTTPException(status_code=409, detail=f"Holding for {req.symbol} already exists")
         
         holding = Holding(
-            portfolio_id=portfolio_id,
+            portfolio_id=str(portfolio_id),
             symbol=req.symbol,
             quantity=req.quantity,
             avg_cost=req.avg_cost
@@ -245,12 +243,13 @@ async def create_holding(
         db.add(holding)
         db.commit()
         db.refresh(holding)
-        return HoldingResponse.from_orm(holding)
+        return HoldingResponse.model_validate(holding)
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.get(
@@ -259,29 +258,36 @@ async def create_holding(
     summary="List portfolio holdings",
 )
 async def list_holdings(
-    portfolio_id: UUID,
+    portfolio_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """List all holdings in portfolio."""
+    print("=== LIST HOLDINGS HIT ===")
+    print("portfolio_id:", portfolio_id)
+    print("portfolio_id type:", type(portfolio_id))
+    print("current_user.id:", current_user.id)
+    print("current_user.id type:", type(current_user.id))
+
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
         if not portfolio:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
-        holdings = db.query(Holding).filter_by(portfolio_id=portfolio_id).all()
+        holdings = db.query(Holding).filter_by(portfolio_id=str(portfolio_id)).all()
         return HoldingListResponse(
-            holdings=[HoldingResponse.from_orm(h) for h in holdings],
+            holdings=[HoldingResponse.model_validate(h) for h in holdings],
             total=len(holdings)
         )
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.patch(
@@ -290,26 +296,37 @@ async def list_holdings(
     summary="Update holding",
 )
 async def update_holding(
-    portfolio_id: UUID,
-    holding_id: UUID,
+    portfolio_id: str,
+    holding_id: str,
     req: HoldingUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    
+    print()
+    print("===== UPDATE HOLDING =====")
+    print(f"portfolio_id: {portfolio_id}")
+    print(f"holding_id: {holding_id}")
+    print(f"user id: {current_user.id}")
+    print()
     """Update holding quantity or average cost."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
+
+        print(portfolio)
         
         if not portfolio:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         holding = db.query(Holding).filter_by(
-            id=holding_id,
-            portfolio_id=portfolio_id
+            id=str(holding_id),
+            portfolio_id=str(portfolio_id)
         ).first()
+
+        print(holding)
         
         if not holding:
             raise HTTPException(status_code=404, detail="Holding not found")
@@ -321,12 +338,13 @@ async def update_holding(
         
         db.commit()
         db.refresh(holding)
-        return HoldingResponse.from_orm(holding)
+        return HoldingResponse.model_validate(holding)
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.delete(
@@ -335,15 +353,15 @@ async def update_holding(
     summary="Delete holding",
 )
 async def delete_holding(
-    portfolio_id: UUID,
-    holding_id: UUID,
+    portfolio_id: str,
+    holding_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Delete a holding from portfolio."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -351,8 +369,8 @@ async def delete_holding(
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         holding = db.query(Holding).filter_by(
-            id=holding_id,
-            portfolio_id=portfolio_id
+            id=str(holding_id),
+            portfolio_id=str(portfolio_id)
         ).first()
         
         if not holding:
@@ -365,7 +383,8 @@ async def delete_holding(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 # ==========================================
@@ -379,7 +398,7 @@ async def delete_holding(
     summary="Record transaction (buy/sell)",
 )
 async def create_transaction(
-    portfolio_id: UUID,
+    portfolio_id: str,
     req: TransactionCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -387,11 +406,16 @@ async def create_transaction(
     """
     Record a transaction (buy/sell).
     
-    NOTE: Holding auto-update logic should be in service.py
+    Delegates to the service layer, which auto-updates the
+    corresponding holding (weighted average cost on buy,
+    quantity reduction on sell).
     """
+    from app.services.portfolio import create_transaction as create_transaction_service
+
+
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -399,21 +423,20 @@ async def create_transaction(
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         transaction = Transaction(
-            portfolio_id=portfolio_id,
+            portfolio_id=str(portfolio_id),
             symbol=req.symbol,
-            type=req.type,
+            trans_type=req.type,
             quantity=req.quantity,
-            price_at_trade=req.price_at_trade
+            price_at_trade=req.price_at_trade,
+            db=db,
         )
-        db.add(transaction)
-        db.commit()
-        db.refresh(transaction)
-        return TransactionResponse.from_orm(transaction)
+        return TransactionResponse.model_validate(transaction)
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
 
 
 @router.get(
@@ -422,7 +445,7 @@ async def create_transaction(
     summary="List portfolio transactions",
 )
 async def list_transactions(
-    portfolio_id: UUID,
+    portfolio_id: str,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
     current_user: User = Depends(get_current_user),
@@ -431,7 +454,7 @@ async def list_transactions(
     """List transactions with pagination."""
     try:
         portfolio = db.query(Portfolio).filter_by(
-            id=portfolio_id,
+            id=str(portfolio_id),
             user_id=current_user.id
         ).first()
         
@@ -439,14 +462,14 @@ async def list_transactions(
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
         offset = (page - 1) * limit
-        total = db.query(Transaction).filter_by(portfolio_id=portfolio_id).count()
+        total = db.query(Transaction).filter_by(portfolio_id=str(portfolio_id)).count()
         
         transactions = db.query(Transaction).filter_by(
-            portfolio_id=portfolio_id
+            portfolio_id=str(portfolio_id)
         ).order_by(Transaction.traded_at.desc()).offset(offset).limit(limit).all()
         
         return TransactionListResponse(
-            transactions=[TransactionResponse.from_orm(t) for t in transactions],
+            transactions=[TransactionResponse.model_validate(t) for t in transactions],
             total=total,
             page=page,
             limit=limit
@@ -454,4 +477,5 @@ async def list_transactions(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")

@@ -16,6 +16,11 @@ export const store = configureStore({
     landing: landingReducer,
     portfolio: portfolioReducer,
     dashboard: dashboardReducer,
+// export const store = configureStore({
+//   reducer: {
+//     watchlist: watchlistReducer,
+//    portfolio: portfolioReducer,
+    
   },
 });
 
