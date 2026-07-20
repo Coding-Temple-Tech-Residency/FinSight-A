@@ -1,6 +1,6 @@
 // FinSight-A/frontend/src/pages/DashboardPage.tsx
 import { useEffect } from "react";
-import { useAppDispatch } from "../app/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchPortfolio } from "../features/portfolio/portfolioSlice";
 import { fetchWatchlist } from "../features/watchlist/watchlistSlice";
 import { fetchDashboard } from "../features/dashboard/dashboardSlice";
@@ -15,12 +15,15 @@ import Watchlist from "../components/Watchlist";
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
-
+  const selectedPortfolio = useAppSelector((state) => state.portfolio.selectedPortfolio);
   useEffect(() => {
     dispatch(fetchDashboard());
-    dispatch(fetchPortfolio());
+
+    if (selectedPortfolio) {
+      dispatch(fetchPortfolio(selectedPortfolio.id))
+    }
     dispatch(fetchWatchlist());
-  }, [dispatch]);
+  }, [selectedPortfolio, dispatch]);
 
   return (
     <div className="max-h-screen bg-[#0D1B2A]">

@@ -1,5 +1,5 @@
 import apiFetch from "./api";
-import type { Holding, Portfolio, PortfolioListResponse, HoldingListResponse, PortfolioCreate } from "../types/portfolio";
+import type { Holding, Portfolio, PortfolioListResponse, HoldingListResponse, PortfolioCreate, Transaction, TransactionCreate } from "../types/portfolio";
 
 export async function getPortfolios(): Promise<PortfolioListResponse> {
     const response = await apiFetch('/portfolios');
@@ -73,4 +73,31 @@ export async function deletePortfolio(
     
     return id;
 
+}
+
+export async function getTransactions(
+    portfolioId: string
+): Promise<Transaction[]> {
+    const response = await apiFetch(
+        `/portfolios/${portfolioId}/transactions`
+    );
+
+    const data = await response.json();
+
+    return data.transactions;
+}
+
+export async function createTransaction(
+    portfolioId: string,
+    transaction: TransactionCreate
+): Promise<Transaction> {
+    const response = await apiFetch(
+        `/portfolios/${portfolioId}/transactions`,
+        {
+            method: 'POST',
+            body: JSON.stringify(transaction),
+        }
+    );
+
+    return response.json();
 }

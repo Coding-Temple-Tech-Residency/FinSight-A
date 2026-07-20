@@ -3,10 +3,10 @@
 import { useAppSelector } from "../app/hooks";
 
 export default function PortfolioAllocation() {
-  const { portfolio, quotes } = useAppSelector((state) => state.portfolio);
+  const { holdings, quotes } = useAppSelector((state) => state.portfolio);
 
-  const holdings =
-    portfolio?.holdings.map((holding) => {
+  const allocationHoldings =
+      holdings.map((holding) => {
       const quote = quotes[holding.symbol];
 
       const currentPrice = Number(quote?.price ?? 0);
@@ -18,9 +18,9 @@ export default function PortfolioAllocation() {
       };
     }) ?? [];
 
-  const totalValue = holdings.reduce((sum, holding) => sum + holding.value, 0);
+  const totalValue = allocationHoldings.reduce((sum, holding) => sum + holding.value, 0);
 
-  const allocations = holdings
+  const allocations = allocationHoldings
     .map((holding) => ({
       symbol: holding.symbol,
       percentage: totalValue === 0 ? 0 : (holding.value / totalValue) * 100,
