@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
-import { addHolding, addPortfolio, fetchHoldings, fetchPortfolios, removePortfolio, setSelectedPortfolio, removeHolding } from "../features/portfolio/portfolioSlice";
+import { addHolding, addPortfolio, fetchHoldings, fetchPortfolios, removePortfolio, setSelectedPortfolio, removeHolding, fetchTransactions } from "../features/portfolio/portfolioSlice";
 import type { Portfolio, Holding } from "../types/portfolio";
 import AddHoldingForm from '../components/AddHoldingForm';
 import PortfolioList from "../components/PortfolioList";
 import HoldingCard from "../components/HoldingCard";
+import HoldingList from "../components/HoldingsList";
+import TransactionList from "../components/TransactionList";
+import TransactionForm from '../components/TransactionForm';
 
 export default function PortfolioPage() {
     const dispatch = useAppDispatch();
@@ -26,6 +29,7 @@ export default function PortfolioPage() {
     )
 
     const [showHoldingForm, setShowHoldingForm] = useState(false);
+    const [showTransactionForm, setShowTransactionForm] = useState(false);
 
     const handlePortfolioSelect = (
         portfolio: Portfolio
@@ -34,7 +38,8 @@ export default function PortfolioPage() {
         console.log('Selected Portfolio', portfolio);
 
         dispatch(setSelectedPortfolio(portfolio));
-        dispatch(fetchHoldings(portfolio.id))
+        dispatch(fetchHoldings(portfolio.id));
+        dispatch(fetchTransactions(portfolio.id))
     }
 
     const handleCreatePortfolio = () => {
@@ -122,24 +127,11 @@ export default function PortfolioPage() {
                         {selectedPortfolio.name}
                     </h2>
 
-                    {holdings.length === 0 ? (
-                        <div>
-                            <p>
-                                No holdings yet.
-                            </p>
-                        </div>
-                    ) : (
-                        
-                        holdings.map((holding) => (
-                        <HoldingCard
-                        key={holding.id}
-                        holding={holding}
-                        portfolioId={selectedPortfolio.id}
-                        onDelete={handleDeleteHolding}    
-                       />     
-                    
-                    ))
-                )}
+                    <HoldingList
+                    holdings={holdings}
+                    portfolioId={selectedPortfolio.id}
+                    onDelete={handleDeleteHolding}
+                    />
 
                     <button onClick={() => setShowHoldingForm(true)}>
                         Add Holding
@@ -152,8 +144,16 @@ export default function PortfolioPage() {
                         onClose={() => setShowHoldingForm(false)}
                         />
                     )}
-                    
-                    
+                    <button onClick={() => setShowTransactionForm(true)}>
+                        Add Transaction
+                    </button>
+                    {showTransactionForm && (
+                        <TransactionForm
+                        portfolioId={selectedPortfolio.id}
+                        onClose={() => setShowTransactionForm(false)}
+                        />
+                    )}
+                    <TransactionList />
                     
                 </div>
             )}
