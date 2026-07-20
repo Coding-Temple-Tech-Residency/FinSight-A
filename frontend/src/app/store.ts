@@ -5,7 +5,7 @@ import profileReducer from "../features/profile/profileSlice";
 import watchlistReducer from "../features/watchlist/watchlistSlice";
 import landingReducer from "../features/landing/landingSlice";
 import portfolioReducer from '../features/portfolio/portfolioSlice';
-import portfolioReducer from "../features/portfolio/portfolioSlice";
+
 import dashboardReducer from "../features/dashboard/dashboardSlice";
 
 export const store = configureStore({
@@ -15,7 +15,7 @@ export const store = configureStore({
     profile: profileReducer,
     watchlist: watchlistReducer,
     landing: landingReducer,
-    portfolio: portfolioReducer
+    portfolio: portfolioReducer,
     dashboard: dashboardReducer,
 // export const store = configureStore({
 //   reducer: {

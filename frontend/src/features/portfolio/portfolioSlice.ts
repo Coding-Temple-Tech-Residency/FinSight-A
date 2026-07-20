@@ -1,16 +1,25 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { type Holding, type PortfolioState, type PortfolioListResponse, HoldingListResponse, Portfolio, PortfolioCreate } from '../../types/portfolio';
-import { getPortfolios, createHolding, editHolding, deleteHolding, getHoldings, createPortfolio, deletePortfolio } from '../../services/portfolioServices';
-
+import { type Holding, type PortfolioState, type PortfolioListResponse, HoldingListResponse, Portfolio, PortfolioCreate, type Transaction, PortfolioDashboardResponse, TransactionCreate } from '../../types/portfolio';
+import { getPortfolios, createHolding, editHolding, deleteHolding, getHoldings, createPortfolio, deletePortfolio, getTransactions, createTransaction } from '../../services/portfolioServices';
+import { getPortfolio, getQuote } from "../../services/portfolioApi";
+import { StockQuote } from '../../types/stock';
 
 const initialState: PortfolioState = {
     portfolios: [],
     selectedPortfolio: null,
     holdings: [],
+    transactions: [],
+
+    portfolio: null,
+    quotes: {},
+
     portfolioStatus: 'idle',
     holdingStatus: 'idle',
+    transactionStatus: 'idle',
+    quoteStatus: 'idle',
     error: null,
 };
+
 
 export const fetchPortfolios = createAsyncThunk(
     'portfolio/fetchPortfolios',
@@ -79,6 +88,73 @@ export const removePortfolio = createAsyncThunk<string, string>(
     }
 )
 
+//Transactions
+
+export const fetchTransactions = createAsyncThunk<Transaction[], string>(
+    'portfolio/fetchTransactions',
+    async (portfolioId) => {
+        return await getTransactions(portfolioId);
+    }
+);
+
+export const addTransaction = createAsyncThunk<Transaction, {
+    portfolioId: string;
+    transaction: TransactionCreate;
+    
+}
+>
+(
+    'portfolio/addTransaction',
+    async({
+        portfolioId,
+        transaction
+    }) => {
+        return await createTransaction(
+            portfolioId,
+            transaction
+        );
+    }
+);
+
+//Dashboard
+export const fetchPortfolio = createAsyncThunk
+<PortfolioDashboardResponse, string>(
+  "portfolio/fetchPortfolio",
+  async (portfolioId) => {
+    const portfolio = await getPortfolio(portfolioId);
+    const holdingsResponse = await getHoldings(portfolioId);
+    // if (portfolio.total === 0) {
+    //   throw new Error("No portfolio found");
+    // }
+
+    //const portfolio = await getPortfolio(portfolios.portfolios[0].id);
+    const holdings = holdingsResponse.holdings;
+
+    const quoteResults = await Promise.all(
+        holdings.map(async (holding) => {
+            const quote = await getQuote(holding.symbol);
+            return {
+                symbol: holding.symbol,
+                quote
+            }
+        })
+    )
+    const quotes = await quoteResults.reduce(
+      (acc, item) => {
+        acc[item.symbol] = item.quote;
+        return acc;
+      },
+      {} as Record<string, StockQuote>
+    );
+
+    return {
+      portfolio,
+      holdings,
+      quotes,
+    };
+  }
+);
+
 const portfolioSlice = createSlice({
     name: 'portfolio',
     initialState,
@@ -95,21 +171,21 @@ const portfolioSlice = createSlice({
     extraReducers: (builder) => {
 
         builder
-
+            //Portfolio
             .addCase(fetchPortfolios.pending, (state) => {
-                state.status = 'loading';
+                state.portfolioStatus = 'loading';
             })
 
             .addCase(fetchPortfolios.fulfilled, (state, action) => {
-                state.status = 'succeeded';
+                state.portfolioStatus = 'succeeded';
                 state.portfolios = action.payload.portfolios;
             })
 
             .addCase(fetchPortfolios.rejected, (state, action) => {
-                state.status = 'failed',
+                state.portfolioStatus = 'failed',
                 state.error = action.error.message ?? 'Unknown error';
             })
-
+            //Holdings
             .addCase(addHolding.fulfilled, (state, action) => {
                 state.holdings.push(action.payload);
             })
@@ -131,17 +207,17 @@ const portfolioSlice = createSlice({
             })
 
             .addCase(fetchHoldings.pending, (state) => {
-                state.status = 'loading';
+                state.holdingStatus = 'loading';
             })
 
             .addCase(fetchHoldings.fulfilled, (state, action) => {
-                state.status = 'succeeded';
+                state.holdingStatus = 'succeeded';
 
                 state.holdings = action.payload.holdings;
             })
 
             .addCase(fetchHoldings.rejected, (state, action) => {
-                state.status = 'failed';
+                state.holdingStatus = 'failed';
 
                 state.error = 
                     action.error.message ?? 'Unkown error';
@@ -165,82 +241,56 @@ const portfolioSlice = createSlice({
                     state.holdings = []
                 }
             })
+
+            //Transactions
+            .addCase(fetchTransactions.pending, (state) => {
+                state.transactionStatus = 'loading';
+            })
+            .addCase(fetchTransactions.fulfilled, (state, action) => {
+                state.transactionStatus = 'succeeded';
+                state.transactions = action.payload
+            })
+            .addCase(fetchTransactions.rejected, (state,action) => {
+                state.transactionStatus = 'failed';
+                state.error = action.error.message ?? 'Unable to fetch transaction'
+            })
+            .addCase(addTransaction.fulfilled, (state, action ) => {
+                state.transactions.push(action.payload);
+            })
+
+            //Dashboard
+            .addCase(fetchPortfolio.pending, (state) => {
+            state.portfolioStatus = "loading";
+            state.error = null;
+            })
+
+            .addCase(fetchPortfolio.fulfilled, (state, action) => {
+            state.portfolioStatus = "idle";
+
+            state.portfolio = action.payload.portfolio;
+
+            state.holdings = action.payload.holdings;
+
+            state.quotes = action.payload.quotes;
+            })
+
+            .addCase(fetchPortfolio.rejected, (state, action) => {
+            state.portfolioStatus = "failed";
+            state.error = action.error.message ?? "Unknown error";
+            });
+
     },
 });
 
 export default portfolioSlice.reducer;
+
+
 export const { setSelectedPortfolio } = portfolioSlice.actions;
 // FinSight-A/src/features/portfolio/portfolioSlice.ts
 
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import type { PortfolioState } from "../../types/portfolio";
-import { getPortfolio, getPortfolios, getQuote } from "../../services/portfolioApi";
 
-const initialState: PortfolioState = {
-  portfolio: null,
-  quotes: {},
-  status: "idle",
-  error: null,
-};
 
-export const fetchPortfolio = createAsyncThunk(
-  "portfolio/fetchPortfolio",
-  async () => {
-    const portfolios = await getPortfolios();
 
-    if (portfolios.total === 0) {
-      throw new Error("No portfolio found");
-    }
 
-    const portfolio = await getPortfolio(portfolios.portfolios[0].id);
 
-    const quotes = await Promise.all(
-      portfolio.holdings.map(async (holding) => {
-        const quote = await getQuote(holding.symbol);
 
-        return {
-          symbol: holding.symbol,
-          quote,
-        };
-      })
-    );
-
-    return {
-      portfolio,
-      quotes,
-    };
-  }
-);
-const portfolioSlice = createSlice({
-  name: "portfolio",
-  initialState,
-  reducers: {},
-
-  extraReducers: (builder) => {
-    builder
-
-      .addCase(fetchPortfolio.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-
-      .addCase(fetchPortfolio.fulfilled, (state, action) => {
-        state.status = "idle";
-
-        state.portfolio = action.payload.portfolio;
-
-        state.quotes = {};
-
-        action.payload.quotes.forEach(({ symbol, quote }) => {
-          state.quotes[symbol] = quote;
-        });
-      })
-
-      .addCase(fetchPortfolio.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.error.message ?? "Unknown error";
-      });
-  },
-});
-
-export default portfolioSlice.reducer;
