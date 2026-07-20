@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 # ==========================================
@@ -24,7 +24,8 @@ class PortfolioCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Portfolio name")
     description: Optional[str] = Field(None, max_length=500, description="Optional description")
 
-    @validator("name")
+    @field_validator("name")
+    @classmethod
     def name_not_empty(cls, v):
         if not v or v.isspace():
             raise ValueError("Name cannot be empty or whitespace only")
@@ -45,7 +46,8 @@ class PortfolioUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=500)
 
-    @validator("name")
+    @field_validator("name")
+    @classmethod
     def name_not_empty(cls, v):
         if v is not None and (not v or v.isspace()):
             raise ValueError("Name cannot be empty or whitespace only")
@@ -92,11 +94,12 @@ class PortfolioListResponse(BaseModel):
 
 class HoldingCreate(BaseModel):
     """Schema for manually adding a holding."""
-    symbol: str = Field(..., min_length=1, max_length=10, description="Stock ticker")
-    quantity: Decimal = Field(..., gt=0, decimal_places=4, description="Number of shares")
-    avg_cost: Optional[Decimal] = Field(None, gt=0, decimal_places=6, description="Average purchase price")
+    symbol: str = Field(..., min_length=1, max_length=10, pattern="^[A-Za-z0-9.]+$", description="Stock ticker (letters, digits, and periods only)")
+    quantity: Decimal = Field(..., gt=0, le=1_000_000_000, decimal_places=4, description="Number of shares (max 1 billion)")
+    avg_cost: Optional[Decimal] = Field(None, gt=0, le=1_000_000, decimal_places=6, description="Average purchase price (max $1,000,000)")
 
-    @validator("symbol")
+    @field_validator("symbol")
+    @classmethod
     def symbol_uppercase(cls, v):
         return v.upper().strip()
 
@@ -114,7 +117,7 @@ class HoldingCreate(BaseModel):
 class HoldingUpdate(BaseModel):
     """Schema for updating a holding (all fields optional)."""
     quantity: Optional[Decimal] = Field(None, ge=0, decimal_places=4)
-    avg_cost: Optional[Decimal] = Field(None, gt=0, decimal_places=6)
+    avg_cost: Optional[Decimal] = Field(None, gt=0, le=1_000_000, decimal_places=6)
 
     model_config = {
         "json_schema_extra": {
@@ -150,16 +153,18 @@ class HoldingListResponse(BaseModel):
 
 class TransactionCreate(BaseModel):
     """Schema for creating a transaction (buy/sell)."""
-    symbol: str = Field(..., min_length=1, max_length=10, description="Stock ticker")
-    type: str = Field(..., pattern="^(buy|sell)$", description="Transaction type: 'buy' or 'sell'")
-    quantity: Decimal = Field(..., gt=0, decimal_places=4, description="Number of shares (always positive)")
-    price_at_trade: Optional[Decimal] = Field(None, gt=0, decimal_places=6, description="Price per share")
+    symbol: str = Field(..., min_length=1, max_length=10, pattern="^[A-Za-z0-9.]+$", description="Stock ticker (letters, digits, and periods only)")
+    type: str = Field(..., pattern="^(?i)(buy|sell)$", description="Transaction type: 'buy' or 'sell' (case-insensitive)")
+    quantity: Decimal = Field(..., gt=0, le=1_000_000_000, decimal_places=4, description="Number of shares (always positive, max 1 billion)")
+    price_at_trade: Optional[Decimal] = Field(None, gt=0, le=1_000_000, decimal_places=6, description="Price per share (max $1,000,000)")
 
-    @validator("symbol")
+    @field_validator("symbol")
+    @classmethod
     def symbol_uppercase(cls, v):
         return v.upper().strip()
 
-    @validator("type")
+    @field_validator("type")
+    @classmethod
     def type_lowercase(cls, v):
         return v.lower().strip()
 

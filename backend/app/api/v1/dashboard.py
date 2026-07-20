@@ -31,10 +31,8 @@ class PortfolioSummary(BaseModel):
 class DashboardResponse(BaseModel):
     user_profile: UserProfile
     portfolio_summary: PortfolioSummary
-    watchlist_preview: List[Any]
-    recent_market_trends: List[MoverItem]
     watchlist_preview: List[WatchlistItemResponse]
-    recent_market_trends: List[Any]
+    recent_market_trends: List[MoverItem]
 
 
 @router.get(
@@ -66,10 +64,8 @@ def get_dashboard(
             count=len(portfolios),
             total_value=total_value,
         ),
-        #watchlist_preview=[],
         recent_market_trends=[
             MoverItem(**m) for m in get_top_movers()["top_gainers"][:5]
         ],
         watchlist_preview=list_watchlist_items(user_id=current_user.id, db=db)[:5],
-        #recent_market_trends=[],
     )
