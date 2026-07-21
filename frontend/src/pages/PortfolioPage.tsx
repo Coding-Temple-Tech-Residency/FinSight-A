@@ -100,63 +100,85 @@ export default function PortfolioPage() {
     console.log(portfolios);
 
     return (
-        <div>
-            <h1>Portfolio</h1>
 
-            <button onClick={handleCreatePortfolio}>
-                Create Portfolio
-            </button>
-
-            {!selectedPortfolio && (
-                
-                <div>
-                    <p>
-                        Select a portfolio to begin.
-                    </p>
-                </div>
-            )}
-            <PortfolioList
-                portfolios={portfolios}
-                onSelect={handlePortfolioSelect}
-                onDelete={handleDeletePortfolio}
-            />
-
-            {selectedPortfolio && (
-                <div>
-                    <h2>
-                        {selectedPortfolio.name}
-                    </h2>
-
-                    <HoldingList
-                    holdings={holdings}
-                    portfolioId={selectedPortfolio.id}
-                    onDelete={handleDeleteHolding}
+        <div className="min-h-screen bg-slate-900 p-6 text-slate-100">
+            <div className="mx-auto max-w-7xl space-y-6 rounded-xl border border-[#24354D] bg-[#101C31] p-4">
+                <header className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold">Portfolio</h1>
+                    </div>
+                    <button className="rounded-lg bg-cyan-600 px-4 py-2 font-medium hover:bg-cyan-500 transition" onClick={handleCreatePortfolio}>
+                        Create Portfolio
+                    </button>
+                </header>
+                    {!selectedPortfolio && (
+                        
+                        <div className="text-center">
+                            <p>
+                                Select a portfolio to begin.
+                            </p>
+                        </div>
+                    )}
+                    <div>
+                    <PortfolioList
+                        portfolios={portfolios}
+                        onSelect={handlePortfolioSelect}
+                        onDelete={handleDeletePortfolio}
                     />
+                    </div>
 
-                    <button onClick={() => setShowHoldingForm(true)}>
-                        Add Holding
-                    </button>
-                    {showHoldingForm && (
-                        <AddHoldingForm
-                        portfolioId={
-                            selectedPortfolio.id
-                        }
-                        onClose={() => setShowHoldingForm(false)}
-                        />
+                    {selectedPortfolio && (
+                        <div>
+                            <div className="rounded-xl border border-[#24354D] bg-[#101C31] p-4">
+                            <header className="flex items-center justify-between">
+                            
+                            <h2 className="text-2xl font-bold">
+                                {selectedPortfolio.name}
+                            </h2>
+
+                            <button className="border rounded-lg py-2 px-2 bg-cyan-500 transition hover:bg-slate-500 mb-2 mt-2" onClick={() => setShowHoldingForm(true)}>
+                                Add Holding
+                            </button>
+                            
+                            </header>
+                            <HoldingList
+                            holdings={holdings}
+                            portfolioId={selectedPortfolio.id}
+                            onDelete={handleDeleteHolding}
+                            />
+                            <div>
+                            
+                            {showHoldingForm && (
+                                <AddHoldingForm
+                                portfolioId={
+                                    selectedPortfolio.id
+                                }
+                                onClose={() => setShowHoldingForm(false)}
+                                />
+                            )}
+                            </div> 
+                            </div>
+                            <div>
+                           
+                            <button 
+                            className='border rounded-lg py-2 px-2 bg-cyan-500 mt-2 mb-2 transition hover:bg-slate-500'
+                            onClick={() => setShowTransactionForm(true)}>
+                                Add Transaction
+                            </button>
+                            {showTransactionForm && (
+                                <TransactionForm
+                                portfolioId={selectedPortfolio.id}
+                                onClose={() => setShowTransactionForm(false)}
+                                />
+                            )}
+                            </div>
+                            <TransactionList />
+                            
+                        </div>
                     )}
-                    <button onClick={() => setShowTransactionForm(true)}>
-                        Add Transaction
-                    </button>
-                    {showTransactionForm && (
-                        <TransactionForm
-                        portfolioId={selectedPortfolio.id}
-                        onClose={() => setShowTransactionForm(false)}
-                        />
-                    )}
-                    <TransactionList />
-                    
-                </div>
-            )}
+                
+            </div>
         </div>
+
     )
 }

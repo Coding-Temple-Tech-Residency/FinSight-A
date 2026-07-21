@@ -422,7 +422,7 @@ async def create_transaction(
         if not portfolio:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         
-        transaction = Transaction(
+        transaction = create_transaction_service(
             portfolio_id=str(portfolio_id),
             symbol=req.symbol,
             trans_type=req.type,
