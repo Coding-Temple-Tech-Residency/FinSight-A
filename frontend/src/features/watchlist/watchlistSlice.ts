@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
-const API = `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/api/v1`;
+import apiFetch from "../../services/api";
+import type { StockQuote } from "../../types/stock";
 
 export interface WatchlistItem {
   id: string;
@@ -11,48 +11,81 @@ export interface WatchlistItem {
 
 interface WatchlistState {
   items: WatchlistItem[];
+  quotes: Record<string, StockQuote>;
   status: "idle" | "loading" | "failed";
   error: string | null;
 }
 
 const initialState: WatchlistState = {
   items: [],
+  quotes: {},
   status: "idle",
   error: null,
 };
 
-export const fetchWatchlist = createAsyncThunk("watchlist/fetch", async () => {
-  const res = await fetch(`${API}/watchlist`, { credentials: "include" });
-  if (!res.ok) throw new Error("Failed to fetch watchlist");
-  const data = await res.json();
-  return data.items as WatchlistItem[];
-});
+export const fetchWatchlist = createAsyncThunk(
+  "watchlist/fetch",
+  async () => {
+    const response = await apiFetch("/watchlist");
+    const data = await response.json();
+
+    return data.items as WatchlistItem[];
+  }
+);
+
+export const fetchWatchlistQuotes = createAsyncThunk(
+  "watchlist/fetchQuotes",
+  async (items: WatchlistItem[]) => {
+    const results = await Promise.all(
+      items.map(async (item) => {
+        const response = await apiFetch(
+          `/market/quote/${item.symbol.toUpperCase()}`
+        );
+
+        const quote = (await response.json()) as StockQuote;
+
+        return {
+          symbol: item.symbol,
+          quote,
+        };
+      })
+    );
+
+    return results.reduce(
+      (acc, item) => {
+        acc[item.symbol] = item.quote;
+        return acc;
+      },
+      {} as Record<string, StockQuote>
+    );
+  }
+);
 
 export const addToWatchlist = createAsyncThunk(
   "watchlist/add",
   async (symbol: string) => {
-    const res = await fetch(`${API}/watchlist`, {
+    const response = await apiFetch("/watchlist", {
       method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ symbol }),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail ?? "Failed to add to watchlist");
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail ?? "Failed to add to watchlist");
     }
-    return (await res.json()) as WatchlistItem;
+
+    return data as WatchlistItem;
   }
 );
 
 export const removeFromWatchlist = createAsyncThunk(
   "watchlist/remove",
   async (symbol: string) => {
-    const res = await fetch(`${API}/watchlist/${symbol}`, {
+    await apiFetch(`/watchlist/${symbol}`, {
       method: "DELETE",
-      credentials: "include",
     });
-    if (!res.ok) throw new Error("Failed to remove from watchlist");
+
     return symbol;
   }
 );
@@ -67,19 +100,31 @@ const watchlistSlice = createSlice({
         state.status = "loading";
         state.error = null;
       })
+
       .addCase(fetchWatchlist.fulfilled, (state, action) => {
         state.status = "idle";
         state.items = action.payload;
       })
+
       .addCase(fetchWatchlist.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message ?? "Unknown error";
       })
+
+      .addCase(fetchWatchlistQuotes.fulfilled, (state, action) => {
+        state.quotes = action.payload;
+      })
+
       .addCase(addToWatchlist.fulfilled, (state, action) => {
         state.items.push(action.payload);
       })
+
       .addCase(removeFromWatchlist.fulfilled, (state, action) => {
-        state.items = state.items.filter((i) => i.symbol !== action.payload);
+        state.items = state.items.filter(
+          (item) => item.symbol !== action.payload
+        );
+
+        delete state.quotes[action.payload];
       });
   },
 });

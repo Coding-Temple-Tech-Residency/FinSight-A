@@ -40,13 +40,27 @@ export default function PortfolioValue() {
       </h2>
 
       <div className="mb-8 text-center">
-        <p className="text-[34px] font-bold text-white">
-          ${totalValue.toLocaleString()}
-        </p>
+        <div className="mb-8 text-center">
+          <p className="text-[34px] font-bold text-white">
+            {Number(totalValue).toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </p>
 
-        <p className="mt-3 text-[15px] font-semibold text-green-400">
-          ▲ ${todayChange.toLocaleString()} ({todayChangePercent}%) Today
-        </p>
+          <p className="mt-3 text-[15px] font-semibold text-green-400">
+            ▲{" "}
+            {todayChange.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}{" "}
+            ({todayChangePercent.toFixed(2)}%) Today
+          </p>
+        </div>
       </div>
 
       <div className="space-y-5">
@@ -54,7 +68,13 @@ export default function PortfolioValue() {
           <span className="text-gray-400">Total Return</span>
 
           <span className="font-semibold text-green-400">
-            ${totalReturn.toLocaleString()} ({totalReturnPercent}%)
+            {totalReturn.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}{" "}
+            ({totalReturnPercent.toFixed(2)}%)
           </span>
         </div>
 
@@ -62,7 +82,12 @@ export default function PortfolioValue() {
           <span className="text-gray-400">Cash Available</span>
 
           <span className="font-semibold text-white">
-            ${cashAvailable.toLocaleString()}
+            {cashAvailable.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </span>
         </div>
 
