@@ -6,7 +6,7 @@ export default function PortfolioAllocation() {
   const { holdings, quotes } = useAppSelector((state) => state.portfolio);
 
   const allocationHoldings =
-      holdings.map((holding) => {
+    holdings.map((holding) => {
       const quote = quotes[holding.symbol];
 
       const currentPrice = Number(quote?.price ?? 0);
@@ -18,7 +18,10 @@ export default function PortfolioAllocation() {
       };
     }) ?? [];
 
-  const totalValue = allocationHoldings.reduce((sum, holding) => sum + holding.value, 0);
+  const totalValue = allocationHoldings.reduce(
+    (sum, holding) => sum + holding.value,
+    0,
+  );
 
   const allocations = allocationHoldings
     .map((holding) => ({
@@ -68,7 +71,9 @@ export default function PortfolioAllocation() {
       <div className="flex items-center justify-between text-lg">
         <span className="font-medium text-white">Total</span>
 
-        <span className="font-semibold text-white">100.0%</span>
+        <span className="font-semibold text-white">
+          {totalValue > 0 ? "100.0%" : "—"}
+        </span>
       </div>
     </section>
   );
