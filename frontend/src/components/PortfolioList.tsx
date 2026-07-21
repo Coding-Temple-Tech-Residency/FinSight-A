@@ -14,16 +14,19 @@ export default function PortfolioList({
 
 }: PortfolioListProps) {
     return (
-        <div>
+        <div className='w-full space-y-3'>
             {portfolios.map((portfolio) => (
-                <div key={portfolio.id}>
-                    <div
+                <div className="flex w-full items-center justify-center gap-5"
+                key={portfolio.id}>
+                    <button
+                    className="border rounded-lg px-2 py-2 bg-cyan-500 text-slate-200 transition hover:bg-slate-500"
                     onClick={() => onSelect(portfolio)}>
                 
                     {portfolio.name}
-                    </div>
+                    </button>
 
                     <button
+                    className="border rounded-lg py-2 px-2 transition hover:bg-red-500"
                         onClick={() => {
                             if (
                                 window.confirm(

@@ -1,5 +1,5 @@
 import { useAppDispatch } from "../app/hooks";
-import { addTransaction } from "../features/portfolio/portfolioSlice";
+import { addTransaction, fetchHoldings, fetchTransactions } from "../features/portfolio/portfolioSlice";
 import { useState } from "react";
 import type { FormEvent } from 'react';
 
@@ -18,14 +18,14 @@ export default function AddTransactionForm({
     const [quantity, setQuantity] = useState(0);
     const [price, setPrice] = useState(0);
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         if(!symbol || quantity <= 0 || price <= 0) {
             return;
         }
-    
-        dispatch(addTransaction({
+        try{
+        await dispatch(addTransaction({
             portfolioId,
             transaction: {
                 symbol: symbol.toUpperCase(),
@@ -34,8 +34,14 @@ export default function AddTransactionForm({
                 price_at_trade: price
             }
             })
-        );
+        ).unwrap();
+
+        await dispatch(fetchTransactions(portfolioId));
+
+        await dispatch(fetchHoldings(portfolioId));
+
         onClose();
+    } catch (error) {console.log('Failed to add transaction:', error)}
     };
     return (
         <form onSubmit={handleSubmit}>
