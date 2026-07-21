@@ -14,75 +14,49 @@ class PriceHistoryService:
     
     def fetch_and_store_history(self, symbol: str) -> bool:
         """
-        Fetch daily prices from Alpha Vantage and store in DB.
+        Fetch 1 year of daily OHLCV from yfinance and store in DB.
         Returns True if successful, False otherwise.
         """
         try:
-            import requests
-            from app.core.config import get_settings
-            
-            settings = get_settings()
-            
-            params = {
-                "function": "TIME_SERIES_DAILY",
-                "symbol": symbol,
-                "apikey": settings.alpha_vantage_api_key,
-            }
-            
-            response = requests.get(
-                "https://www.alphavantage.co/query",
-                params=params,
-                timeout=10
-            )
-            response.raise_for_status()
-            
-            data = response.json()
-            
-            if "Error Message" in data or "Note" in data:
-                print(f"API Error for {symbol}")
+            import yfinance as yf
+
+            hist = yf.Ticker(symbol).history(period="1y")
+
+            if hist.empty:
+                print(f"No history data from yfinance for {symbol}")
                 return False
-            
-            time_series = data.get("Time Series (Daily)", {})
-            
-            if not time_series:
-                print(f"No time series data for {symbol}")
-                return False
-            
+
             db = SessionLocal()
-            
             try:
-                for date_str, daily_data in time_series.items():
+                for date_idx, row in hist.iterrows():
+                    date_str = date_idx.strftime("%Y-%m-%d")
                     existing = db.query(PriceHistory).filter(
                         PriceHistory.symbol == symbol,
-                        PriceHistory.date == date_str
+                        PriceHistory.date == date_str,
                     ).first()
-                    
+
                     if existing:
                         continue
-                    
-                    price_entry = PriceHistory(
+
+                    db.add(PriceHistory(
                         symbol=symbol,
                         date=date_str,
-                        open=float(daily_data.get("1. open", 0)),
-                        high=float(daily_data.get("2. high", 0)),
-                        low=float(daily_data.get("3. low", 0)),
-                        close=float(daily_data.get("4. close", 0)),
-                        volume=int(daily_data.get("5. volume", 0)),
-                    )
-                    db.add(price_entry)
-                
+                        open=float(row["Open"]),
+                        high=float(row["High"]),
+                        low=float(row["Low"]),
+                        close=float(row["Close"]),
+                        volume=int(row["Volume"]),
+                    ))
+
                 db.commit()
-                print(f"Stored {len(time_series)} price records for {symbol}")
-                
+                print(f"Stored price history for {symbol} via yfinance")
                 cache.clear(f"price_history_{symbol}")
-                
                 return True
-            
             finally:
                 db.close()
-        
+
         except Exception as e:
-            print(f"Error fetching price history: {e}")
+            print(f"Error fetching price history via yfinance: {e}")
             return False
     
     def get_price_history(

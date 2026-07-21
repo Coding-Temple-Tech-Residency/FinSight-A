@@ -1,11 +1,22 @@
+"""
+Market data service — yfinance backend.
+Public interface is identical to the old Alpha Vantage version so all callers
+(market.py router, ai service) work without changes.
+"""
 import time
-import httpx
-from app.core.config import get_settings
+from datetime import date
 
-settings = get_settings()
+import yfinance as yf
 
-_cache: dict[str, tuple] = {}  # key -> (data, timestamp)
+_cache: dict[str, tuple] = {}
 CACHE_TTL = 60  # seconds
+
+# Curated large-cap symbols used as the movers fallback
+_MOVER_SYMBOLS = [
+    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "JPM", "V",
+    "UNH", "WMT", "JNJ", "PG", "XOM", "BAC", "MA", "CVX", "HD", "ABBV",
+    "MRK", "AVGO", "LLY", "PEP", "COST", "TMO", "MCD", "ORCL", "ACN", "AMD", "NFLX",
+]
 
 
 def _from_cache(key: str):
@@ -16,90 +27,126 @@ def _from_cache(key: str):
     return None
 
 
-def _store_cache(key: str, data):
+def _store_cache(key: str, data) -> None:
     _cache[key] = (data, time.time())
 
 
-def _is_rate_limited(body: dict) -> bool:
-    """Alpha Vantage signals rate limits in the JSON body, not via HTTP status."""
-    return "Information" in body or "Note" in body
+def _fmt_mover(symbol: str, price: float, change: float, change_pct: float, volume: int) -> dict:
+    return {
+        "ticker": symbol,
+        "price": f"{price:.2f}",
+        "change_amount": f"{change:+.2f}",
+        "change_percentage": f"{change_pct:+.2f}%",
+        "volume": str(volume),
+    }
+
+
+def _screener_movers() -> dict | None:
+    """
+    Try yfinance's built-in day_gainers / day_losers screener.
+    Returns the formatted result dict or None if unavailable.
+    """
+    try:
+        screener = yf.Screener()
+
+        screener.set_predefined_body("day_gainers")
+        gainers_quotes = (screener.response or {}).get("quotes", [])[:10]
+
+        screener.set_predefined_body("day_losers")
+        losers_quotes = (screener.response or {}).get("quotes", [])[:10]
+
+        def _fmt(q: dict) -> dict:
+            price = float(q.get("regularMarketPrice", 0) or 0)
+            change = float(q.get("regularMarketChange", 0) or 0)
+            change_pct = float(q.get("regularMarketChangePercent", 0) or 0)
+            vol = int(q.get("regularMarketVolume", 0) or 0)
+            return _fmt_mover(q.get("symbol", ""), price, change, change_pct, vol)
+
+        result = {
+            "top_gainers": [_fmt(q) for q in gainers_quotes if q.get("symbol")],
+            "top_losers": [_fmt(q) for q in losers_quotes if q.get("symbol")],
+        }
+        if result["top_gainers"] or result["top_losers"]:
+            return result
+    except Exception:
+        pass
+    return None
+
+
+def _curated_movers() -> dict:
+    """
+    Fallback: fetch fast_info for each symbol in the curated list and sort by % change.
+    """
+    rows: list[tuple] = []
+    for sym in _MOVER_SYMBOLS:
+        try:
+            fi = yf.Ticker(sym).fast_info
+            price = fi.last_price
+            prev = fi.previous_close
+            if price is None or not prev:
+                continue
+            change = float(price) - float(prev)
+            change_pct = change / float(prev) * 100
+            vol = int(fi.last_volume or 0)
+            rows.append((sym, float(price), change, change_pct, vol))
+        except Exception:
+            continue
+
+    if not rows:
+        return {"top_gainers": [], "top_losers": []}
+
+    rows.sort(key=lambda x: x[3])
+    return {
+        "top_gainers": [_fmt_mover(*r) for r in reversed(rows[-10:])],
+        "top_losers": [_fmt_mover(*r) for r in rows[:10]],
+    }
 
 
 def get_top_movers() -> dict:
     """
-    Returns {"top_gainers": [...], "top_losers": [...]} or empty lists on error/rate-limit.
-    Results are cached for CACHE_TTL seconds.
+    Returns {"top_gainers": [...], "top_losers": [...]} or empty lists on error.
+    Tries the yfinance screener first; falls back to scanning the curated symbol list.
+    Results cached for CACHE_TTL seconds.
     """
     cached = _from_cache("top_movers")
     if cached is not None:
         return cached
 
-    empty = {"top_gainers": [], "top_losers": []}
-
-    if not settings.alpha_vantage_api_key:
-        return empty
-
-    try:
-        resp = httpx.get(
-            "https://www.alphavantage.co/query",
-            params={"function": "TOP_GAINERS_LOSERS", "apikey": settings.alpha_vantage_api_key},
-            timeout=10,
-        )
-        body = resp.json()
-
-        if _is_rate_limited(body):
-            return empty
-
-        result = {
-            "top_gainers": body.get("top_gainers", [])[:10],
-            "top_losers": body.get("top_losers", [])[:10],
-        }
-        _store_cache("top_movers", result)
-        return result
-
-    except Exception:
-        return empty
+    result = _screener_movers() or _curated_movers()
+    _store_cache("top_movers", result)
+    return result
 
 
 def get_quote(symbol: str) -> dict | None:
     """
-    Returns a quote dict for the given symbol, or None on error/rate-limit.
-    Results are cached per symbol for CACHE_TTL seconds.
+    Returns a quote dict for the given symbol, or None on error.
+    Result shape matches the old Alpha Vantage version exactly.
+    Cached per symbol for CACHE_TTL seconds.
     """
-    key = f"quote_{symbol.upper()}"
+    sym = symbol.upper()
+    key = f"quote_{sym}"
     cached = _from_cache(key)
     if cached is not None:
         return cached
 
-    if not settings.alpha_vantage_api_key:
-        return None
-
     try:
-        resp = httpx.get(
-            "https://www.alphavantage.co/query",
-            params={
-                "function": "GLOBAL_QUOTE",
-                "symbol": symbol.upper(),
-                "apikey": settings.alpha_vantage_api_key,
-            },
-            timeout=10,
-        )
-        body = resp.json()
-
-        if _is_rate_limited(body):
+        fi = yf.Ticker(sym).fast_info
+        price = fi.last_price
+        prev = fi.previous_close
+        if price is None:
             return None
 
-        quote = body.get("Global Quote", {})
-        if not quote:
-            return None
+        change = float(price) - float(prev) if prev else 0.0
+        change_pct = (change / float(prev) * 100) if prev else 0.0
+        volume = int(fi.last_volume or 0)
 
         result = {
-            "symbol": quote.get("01. symbol", symbol.upper()),
-            "price": quote.get("05. price"),
-            "change": quote.get("09. change"),
-            "change_percent": quote.get("10. change percent"),
-            "volume": quote.get("06. volume"),
-            "latest_trading_day": quote.get("07. latest trading day"),
+            "symbol": sym,
+            "price": f"{float(price):.2f}",
+            "change": f"{change:+.2f}",
+            "change_percent": f"{change_pct:+.2f}%",
+            "volume": str(volume),
+            "latest_trading_day": date.today().isoformat(),
         }
         _store_cache(key, result)
         return result
