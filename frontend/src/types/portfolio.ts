@@ -70,7 +70,7 @@ export interface Transaction {
 export interface TransactionCreate {
     symbol: string;
     type: 'buy' | 'sell';
-    quantity: 'number';
+    quantity: number;
     price_at_trade: number | null;
 }
 

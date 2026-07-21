@@ -19,7 +19,7 @@ export default function HoldingCard({
     const [editingHolding, setEditingHolding] = useState(false);
 
     return (
-        <div>
+        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5 transition hover:border-slate-700 hover:bg-slate-500">
             <h3>
                 {holding.symbol}
             </h3>
