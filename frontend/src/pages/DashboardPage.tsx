@@ -7,6 +7,8 @@ import {
 } from "../features/portfolio/portfolioSlice";
 import { fetchWatchlist } from "../features/watchlist/watchlistSlice";
 import { fetchDashboard } from "../features/dashboard/dashboardSlice";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 import PortfolioAllocation from "../components/PortfolioAllocation";
 import PortfolioPerformance from "../components/PortfolioPerformance";
@@ -17,6 +19,8 @@ import Watchlist from "../components/Watchlist";
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
+  const { isAuthenticated, loading } = useAuth();
+
   const selectedPortfolio = useAppSelector(
     (state) => state.portfolio.selectedPortfolio,
   );
@@ -31,6 +35,14 @@ export default function DashboardPage() {
       dispatch(fetchPortfolio(selectedPortfolio.id));
     }
   }, [selectedPortfolio, dispatch]);
+
+  if (loading) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#0D1B2A] flex flex-col">
@@ -60,7 +72,6 @@ export default function DashboardPage() {
         <div className="pt-3 shrink-0">
           <PortfolioInsight />
         </div>
-
       </main>
     </div>
   );

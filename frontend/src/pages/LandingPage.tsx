@@ -15,14 +15,14 @@ export default function LandingPage() {
             <TrendingStocks />
           </div>
 
-          <div className="col-span-5 flex min-h-0 flex-col gap-3">
+          <div className="col-span-5 flex min-h-0 flex-col gap-1">
             <TrendingPerformance />
             <div className="flex-1">
               <TrendingHighlights />
             </div>
           </div>
 
-          <div className="col-span-3 flex min-h-0 flex-col gap-3">
+          <div className="col-span-3 flex min-h-0 flex-col gap-1">
             <UnlockCard />
             <div className="flex-1">
               <FinSight />

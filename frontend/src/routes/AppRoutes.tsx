@@ -8,6 +8,7 @@ import ProfilePage from "../pages/ProfilePage";
 import WatchlistPage from "../pages/WatchlistPage";
 import RegistrationPage from "../pages/RegistrationPage";
 import PortfolioPage from "../pages/PortfolioPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
   return (
@@ -15,12 +16,15 @@ export default function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<RegistrationPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/market-trends" element={<MarketTrendsPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/watchlist" element={<WatchlistPage />} />
-      <Route path="/chat" element={<ChatPage />} />
-      <Route path="/portfolio" element={<PortfolioPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/market-trends" element={<MarketTrendsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/watchlist" element={<WatchlistPage />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/portfolio" element={<PortfolioPage />} />
+      </Route>
     </Routes>
   );
 }

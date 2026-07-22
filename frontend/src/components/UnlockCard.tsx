@@ -3,7 +3,7 @@ import SignupButton from "./SignupButton";
 
 export default function UnlockCard() {
   return (
-    <div className="shrink-0 rounded-xl border border-[#24354D] bg-[#101C31] p-4">
+    <div className="shrink-0 rounded-xl border border-[#24354D] bg-[#101C31] p-1">
       <SignupButton />
 
       <div className="my-3 text-center text-[28px]">🔐 → 🔓</div>
