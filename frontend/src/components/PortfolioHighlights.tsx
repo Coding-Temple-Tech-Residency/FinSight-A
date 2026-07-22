@@ -3,7 +3,17 @@
 import { useAppSelector } from "../app/hooks";
 
 export default function PortfolioHighlights() {
-  const { best, attention } = useAppSelector((state) => state.chat);
+  const { insight, status, error } = useAppSelector(
+    (state) => state.insights
+  );
+
+  const best =
+    insight?.strengths?.[0] ??
+    "Portfolio strength analysis will appear here.";
+
+  const attention =
+    insight?.recommendations?.[0] ??
+    "Portfolio recommendations will appear here.";
 
   return (
     <div className="h-full min-h-0 overflow-y-auto rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-1">
@@ -21,10 +31,16 @@ export default function PortfolioHighlights() {
 
           <div>
             <h3 className="text-[15px] font-semibold text-white">
-              Best Performer
+              Portfolio Strength
             </h3>
 
-            <p className="mt-1 text-[12px] text-gray-300">{best}</p>
+            <p className="mt-1 text-[12px] text-gray-300">
+              {status === "loading"
+                ? "Analyzing portfolio strengths..."
+                : error
+                  ? "Portfolio analysis temporarily unavailable."
+                  : best}
+            </p>
           </div>
         </article>
 
@@ -38,7 +54,13 @@ export default function PortfolioHighlights() {
               Needs Attention
             </h3>
 
-            <p className="mt-1 text-[12px] text-gray-300">{attention}</p>
+            <p className="mt-1 text-[12px] text-gray-300">
+              {status === "loading"
+                ? "Reviewing portfolio risks..."
+                : error
+                  ? "Portfolio analysis temporarily unavailable."
+                  : attention}
+            </p>
           </div>
         </article>
       </div>
