@@ -10,7 +10,7 @@ All routes require JWT authentication and verify user ownership.
 """
 
 
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -20,6 +20,7 @@ from app.core.logging import logger
 from app.models.user import User
 from app.core.database import get_db
 from app.models.portfolio import Portfolio, Holding, Transaction
+from app.schemas.performance import PortfolioPerformanceResponse
 from app.schemas.portfolio import (
     PortfolioCreate,
     PortfolioUpdate,
@@ -478,4 +479,55 @@ async def list_transactions(
         raise
     except Exception as e:
         logger.error(f"Internal error in portfolio endpoint: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred")
+
+
+# ==========================================
+# PERFORMANCE ENDPOINT
+# ==========================================
+
+@router.get(
+    "/{portfolio_id}/performance",
+    response_model=PortfolioPerformanceResponse,
+    summary="Get portfolio value over time",
+    responses={
+        200: {"description": "Daily value series + summary for the requested range"},
+        400: {"description": "Invalid range parameter"},
+        404: {"description": "Portfolio not found or not owned by current user"},
+    },
+)
+async def get_portfolio_performance(
+    portfolio_id: str,
+    range: Literal["1W", "1M", "YTD", "1Y"] = Query("1M", description="Time range: 1W, 1M, YTD, 1Y"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Returns a daily { date, value } series showing estimated portfolio worth
+    over the selected window, plus a summary block with start/end values and
+    percentage change.
+
+    - **1W** – last 7 days
+    - **1M** – last 30 days
+    - **YTD** – January 1 of the current year through today
+    - **1Y** – last 365 days
+
+    Values are computed from the transaction log when available
+    (basis="reconstructed") or from the current holdings snapshot otherwise
+    (basis="current_holdings_fallback"). See the `disclaimer` field for caveats.
+    """
+    portfolio = db.query(Portfolio).filter_by(
+        id=str(portfolio_id),
+        user_id=current_user.id,
+    ).first()
+
+    if not portfolio:
+        raise HTTPException(status_code=404, detail="Portfolio not found")
+
+    try:
+        from app.services.portfolio_performance import compute_performance
+        result = compute_performance(str(portfolio_id), range, db)
+        return PortfolioPerformanceResponse(**result)
+    except Exception as e:
+        logger.error(f"Internal error in performance endpoint: {e}")
         raise HTTPException(status_code=500, detail="An internal error occurred")
