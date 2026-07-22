@@ -8,7 +8,7 @@ export interface AIInsight {
     generated_at: string;
 }
 
-export interface InsightReqeust {
+export interface InsightRequest {
     portfolioId: string;
 }
 

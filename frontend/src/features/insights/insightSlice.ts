@@ -14,7 +14,7 @@ const initialState: InsightsState = {
     error: null
 }
 
-export const fetchPorfolioInsights = createAsyncThunk(
+export const fetchPortfolioInsights = createAsyncThunk(
     'insights/fetchPortfolioInsights,',
     async (portfolioId: string) => {
         return await getPortfolioInsights(portfolioId);
@@ -27,17 +27,17 @@ const insightsSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(fetchPorfolioInsights.pending, (state) => {
+            .addCase(fetchPortfolioInsights.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
 
-            .addCase(fetchPorfolioInsights.fulfilled, (state, action) => {
+            .addCase(fetchPortfolioInsights.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.insight = action.payload;
             })
 
-            .addCase(fetchPorfolioInsights.rejected, (state, action) => {
+            .addCase(fetchPortfolioInsights.rejected, (state, action) => {
                 state.status = 'failed', 
                 state.error = action.error.message ?? 'Failed to fetch insights';
             })
