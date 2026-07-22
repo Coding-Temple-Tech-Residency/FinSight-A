@@ -8,6 +8,9 @@ import HoldingCard from "../components/HoldingCard";
 import HoldingList from "../components/HoldingsList";
 import TransactionList from "../components/TransactionList";
 import TransactionForm from '../components/TransactionForm';
+import { getPortfolioInsights } from "../services/insightsAPI";
+import { fetchPorfolioInsights } from "../features/insights/insightSlice";
+import AIInsightCard from "../components/AIInsightsCard";
 
 export default function PortfolioPage() {
     const dispatch = useAppDispatch();
@@ -15,6 +18,15 @@ export default function PortfolioPage() {
     const { portfolioStatus, holdingStatus, error } = useAppSelector(
         (state) => state.portfolio
     );
+
+    //quick verification
+    const { insight, status } = useAppSelector(
+        state => state.insights
+    )
+
+    console.log('AI Insight:', insight);
+    console.log('AI Status:', status);
+    console.log('AI Error:', error)
 
     const portfolios = useAppSelector(
         state => state.portfolio.portfolios
@@ -40,6 +52,7 @@ export default function PortfolioPage() {
         dispatch(setSelectedPortfolio(portfolio));
         dispatch(fetchHoldings(portfolio.id));
         dispatch(fetchTransactions(portfolio.id))
+        dispatch(fetchPorfolioInsights(portfolio.id))
     }
 
     const handleCreatePortfolio = () => {
@@ -88,6 +101,11 @@ export default function PortfolioPage() {
         dispatch(fetchPortfolios());
     }, [dispatch]);
 
+    useEffect(() => {
+        getPortfolioInsights('5a489d2d-1c1e-4ec8-9c9d-f0e3816a7c36')
+        .then(data => console.log(data))
+        .catch(err => console.error(err))
+    }, [])
 
     if (portfolioStatus === 'loading') {
         return <p>Loading portfolio...</p>; 
@@ -157,6 +175,9 @@ export default function PortfolioPage() {
                                 />
                             )}
                             </div> 
+                            </div>
+                            <div>
+                                <AIInsightCard />
                             </div>
                             <div>
                            

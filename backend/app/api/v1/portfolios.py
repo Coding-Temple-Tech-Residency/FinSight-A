@@ -34,7 +34,11 @@ from app.schemas.portfolio import (
     TransactionResponse,
     TransactionListResponse,
     ErrorResponse,
+    
 )
+from app.schemas.ai import (PortfolioInsight)
+from datetime import datetime
+from app.services import ai as ai_service
 
 router = APIRouter(
     prefix="/portfolios",
@@ -479,3 +483,43 @@ async def list_transactions(
     except Exception as e:
         logger.error(f"Internal error in portfolio endpoint: {e}")
         raise HTTPException(status_code=500, detail="An internal error occurred")
+
+
+#===================================
+# AI Portfolio Insights
+#===================================
+
+@router.get(
+    '/{portfolio_id}/insights',
+    response_model=PortfolioInsight
+)
+async def get_portfolio_insights(
+    portfolio_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    
+    portfolio = db.query(Portfolio).filter(
+            Portfolio.id == portfolio_id,
+            Portfolio.user_id == current_user.id
+        ).first()
+
+    if not portfolio:
+        raise HTTPException(
+            status_code=404,
+            detail="Portfolio not found",
+        )
+
+    return ai_service.generate_portfolio_insight(
+        portfolio_data={
+            "name": portfolio.name,
+            "holdings": [
+                {
+                    "symbol": holding.symbol,
+                    "quantity": holding.quantity,
+                    "avg_cost": float(holding.avg_cost)
+                }
+                for holding in portfolio.holdings
+            ],
+        }
+    )
