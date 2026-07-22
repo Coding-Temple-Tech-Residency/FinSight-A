@@ -1,6 +1,8 @@
 from decimal import Decimal
 
 import httpx
+import json
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -8,6 +10,7 @@ from app.models.user import User
 from app.services.market import get_top_movers
 from app.services.portfolio import get_user_portfolios
 from app.services.watchlist import list_items as list_watchlist_items
+from app.schemas.ai import PortfolioInsight
 
 GROQ_MODEL = "llama-3.3-70b-versatile"
 _GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -62,3 +65,70 @@ def chat(user: User, message: str, db: Session) -> str:
         return f"Groq API error ({exc.response.status_code}). Please try again."
     except Exception:
         return "Sorry, I couldn't reach the AI service. Please try again."
+    
+def generate_portfolio_insight(
+    portfolio_data: dict,
+) -> PortfolioInsight:
+    
+    settings = get_settings()
+
+    if not settings.groq_api_key:
+        raise Exception('GROQ_API_KEY is not configured.')
+    
+    prompt = f"""
+You are FinSight AI, a portfolio analysis assistant._build_system_prompt
+
+Analyze this investment portfolio.
+
+Portfolio data:
+{json.dumps(portfolio_data, indent=2, default=str)}
+
+Return ONLY valid JSON.
+
+The JSON must have exactly these fields:
+
+{{
+    "health_score": number between 0 and 100,
+    "summary": "short portfolio summary,
+    "diversification": "analysis of diversification",
+    "risk": "risk analysis",
+    "strengths": ["strength 1", "strength 2"],
+    "recommendations": ["recommendation 1", "recommendation 2"],
+    "generated_at": "current timestamp"
+}}
+
+Do not provide buy or sell recommendations.
+"""
+    
+    response = httpx.post(
+        _GROQ_URL,
+        headers={
+            "Authorization": f"Bearer {settings.groq_api_key}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": GROQ_MODEL,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are FinSight AI.",
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            "temperature": 0.3,
+        },
+        timeout=30.0
+    )
+
+    response.raise_for_status()
+
+    content = response.json()["choices"][0]["message"]["content"]
+    
+    content = content.replace("```json", "").replace("```", "").strip()
+
+    data = json.loads(content)
+
+    return PortfolioInsight(**data)
