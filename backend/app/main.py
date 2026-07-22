@@ -16,6 +16,7 @@ from app.core.database import Base, engine
 from app.core.logging import logger, log_error
 from app.models import user  # noqa: F401 — register model with Base
 from app.models import portfolio  # noqa: F401 — register portfolio models
+from app.models import price_history  # noqa: F401 — register price_history table
 from app.models import user_settings  # noqa: F401 — register user settings model
 from app.models import watchlist  # noqa: F401 — register watchlist model
 from app.api.v1.router import router as api_router

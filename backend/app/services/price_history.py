@@ -29,10 +29,10 @@ class PriceHistoryService:
             db = SessionLocal()
             try:
                 for date_idx, row in hist.iterrows():
-                    date_str = date_idx.strftime("%Y-%m-%d")
+                    row_date = date_idx.date()
                     existing = db.query(PriceHistory).filter(
                         PriceHistory.symbol == symbol,
-                        PriceHistory.date == date_str,
+                        PriceHistory.date == row_date,
                     ).first()
 
                     if existing:
@@ -40,7 +40,7 @@ class PriceHistoryService:
 
                     db.add(PriceHistory(
                         symbol=symbol,
-                        date=date_str,
+                        date=row_date,
                         open=float(row["Open"]),
                         high=float(row["High"]),
                         low=float(row["Low"]),
