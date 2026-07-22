@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import logo from "../assets/logo.png";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { sendMessage } from "../features/chat/chatSlice";
+import { Link } from "react-router-dom";
 
 export default function PortfolioFinSight() {
   const dispatch = useAppDispatch();
@@ -37,11 +38,11 @@ Do not include any additional text.`,
   const recommendation = insight ?? "Generating personalized insight...";
 
   return (
-    <div className="rounded-xl border border-[#24354D] bg-[#101C31] p-4">
+    <div className="rounded-xl min-h-[150px] border border-[#24354D] bg-[#101C31] p-4">
       <div className="grid grid-cols-[300px_1fr_200px] items-center gap-4">
         {/* Logo + Title */}
         <div className="flex items-center gap-5">
-          <img src={logo} alt="FinSight" className="h-15 w-15 object-contain" />
+          <img src={logo} alt="FinSight" className="h-25 w-25 object-contain" />
 
           <h2 className="text-[20px] font-semibold text-white">
             FinSight™️ Insight:
@@ -59,9 +60,11 @@ Do not include any additional text.`,
 
         {/* Button */}
         <div className="flex justify-end">
-          <button className="rounded-lg bg-[#6C63FF] px-5 py-2 text-[14px] font-semibold text-white transition hover:opacity-90">
-            Ask Fin →
-          </button>
+          <Link to="/chat">
+            <button className="rounded-lg bg-[#3DD6F5] px-5 py-2 text-[14px] font-semibold text-black transition hover:opacity-90">
+              Ask Fin →
+            </button>
+          </Link>
         </div>
       </div>
     </div>

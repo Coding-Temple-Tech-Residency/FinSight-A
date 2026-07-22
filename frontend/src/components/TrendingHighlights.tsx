@@ -2,7 +2,7 @@
 
 export default function TrendingHighlights() {
   return (
-    <div className="rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-3">
+    <div className="flex h-full min-h-0 flex-col rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-3">
       <div className="mb-5 flex items-center gap-3">
         <span className="text-[20px]">⚡</span>
 
@@ -11,8 +11,8 @@ export default function TrendingHighlights() {
         </h2>
       </div>
 
-      <div className="space-y-2">
-        <article className="flex items-center gap-2 rounded-xl border border-[#24354D] bg-[#162337] p-1">
+      <div className="flex flex-1 flex-col justify-evenly gap-3">
+        <article className="flex items-center gap-4 rounded-xl border border-[#24354D] bg-[#162337] px-4 py-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-black text-3xl">
             🤖
           </div>
@@ -29,7 +29,7 @@ export default function TrendingHighlights() {
           </div>
         </article>
 
-        <article className="flex items-center gap-2 rounded-xl border border-[#24354D] bg-[#162337] p-1">
+        <article className="flex items-center gap-4 rounded-xl border border-[#24354D] bg-[#162337] px-4 py-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-black text-3xl">
             🍎
           </div>
@@ -46,7 +46,7 @@ export default function TrendingHighlights() {
           </div>
         </article>
 
-        <article className="flex items-center gap-2 rounded-xl border border-[#24354D] bg-[#162337] p-1">
+        <article className="flex items-center gap-4 rounded-xl border border-[#24354D] bg-[#162337] px-4 py-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-black text-3xl">
             🍫
           </div>

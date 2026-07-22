@@ -41,7 +41,7 @@ export default function PortfolioPerformance() {
   const performanceData = performance?.series ?? [];
 
   return (
-    <div className="rounded-2xl max-h-[250px] border border-[#24354D] bg-[#0F1B2D] p-2">
+    <div className="rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-2">
       <h2 className="mb-4 text-[20px] font-semibold text-white">
         📈 Portfolio Performance
       </h2>

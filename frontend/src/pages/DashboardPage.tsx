@@ -33,28 +33,34 @@ export default function DashboardPage() {
   }, [selectedPortfolio, dispatch]);
 
   return (
-    <div className="max-h-screen bg-[#0D1B2A]">
-      <main className="w-full px-1 py-1">
-        <div className="grid grid-cols-12 gap-2">
-          <div className="col-span-4">
+    <div className="min-h-[calc(100vh-64px)] bg-[#0D1B2A] flex flex-col">
+      <main className="flex-1 px-2 py-1 flex flex-col min-h-0">
+        <div className="mb-5">
+          <Watchlist />
+        </div>
+
+        <div className="grid h-[calc(100vh-310px)] min-h-0 grid-cols-12 gap-3 overflow-hidden">
+          <div className="col-span-4 min-h-0">
             <PortfolioAllocation />
           </div>
 
-          <div className="col-span-5 space-y-2">
+          <div className="col-span-5 flex min-h-0 flex-col gap-4">
             <PortfolioPerformance />
-            <PortfolioHighlights />
+
+            <div className="min-h-0 flex-1">
+              <PortfolioHighlights />
+            </div>
           </div>
 
-          <div className="col-span-3">
+          <div className="col-span-3 min-h-0">
             <PortfolioValue />
           </div>
-
-          {/* Full-width AI card and Watchlist */}
-          <div className="col-span-12">
-            <Watchlist />
-            <PortfolioInsight />
-          </div>
         </div>
+
+        <div className="pt-3 shrink-0">
+          <PortfolioInsight />
+        </div>
+
       </main>
     </div>
   );

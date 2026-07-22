@@ -8,7 +8,7 @@ export default function PortfolioValue() {
 
   if (status === "loading") {
     return (
-      <div className="rounded-xl border border-[#24354D] bg-[#101C31] p-4.5">
+      <div className="h-full min-h-0 rounded-xl border border-[#24354D] bg-[#101C31] p-4.5">
         <h2 className="mb-7 text-[20px] font-semibold text-white">
           💰 Portfolio Value
         </h2>
@@ -34,7 +34,7 @@ export default function PortfolioValue() {
   const bestPerformer = summary?.best_performer ?? "N/A";
 
   return (
-    <div className="rounded-xl border border-[#24354D] bg-[#101C31] p-4.5">
+    <div className="h-full min-h-0 overflow-y-auto rounded-xl border border-[#24354D] bg-[#101C31] p-4.5">
       <h2 className="mb-7 text-[20px] font-semibold text-white">
         💰 Portfolio Value
       </h2>

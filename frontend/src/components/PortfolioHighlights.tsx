@@ -6,7 +6,7 @@ export default function PortfolioHighlights() {
   const { best, attention } = useAppSelector((state) => state.chat);
 
   return (
-    <div className="rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-1">
+    <div className="h-full min-h-0 overflow-y-auto rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-1">
       <div className="mb-1 flex items-center gap-5">
         <span className="text-[24px]">💼</span>
 
