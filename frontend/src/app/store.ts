@@ -7,6 +7,7 @@ import landingReducer from "../features/landing/landingSlice";
 import portfolioReducer from '../features/portfolio/portfolioSlice';
 
 import dashboardReducer from "../features/dashboard/dashboardSlice";
+import insightReducer from "../features/insights/insightSlice";
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ export const store = configureStore({
     landing: landingReducer,
     portfolio: portfolioReducer,
     dashboard: dashboardReducer,
+    insights: insightReducer,
 // export const store = configureStore({
 //   reducer: {
 //     watchlist: watchlistReducer,
