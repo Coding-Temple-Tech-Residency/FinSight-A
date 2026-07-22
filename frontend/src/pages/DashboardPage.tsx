@@ -1,7 +1,10 @@
 // FinSight-A/frontend/src/pages/DashboardPage.tsx
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
-import { fetchPortfolio } from "../features/portfolio/portfolioSlice";
+import {
+  fetchPortfolio,
+  fetchPortfolios,
+} from "../features/portfolio/portfolioSlice";
 import { fetchWatchlist } from "../features/watchlist/watchlistSlice";
 import { fetchDashboard } from "../features/dashboard/dashboardSlice";
 
@@ -12,17 +15,21 @@ import PortfolioValue from "../components/PortfolioValue";
 import PortfolioInsight from "../components/PortfolioFinSight";
 import Watchlist from "../components/Watchlist";
 
-
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
-  const selectedPortfolio = useAppSelector((state) => state.portfolio.selectedPortfolio);
+  const selectedPortfolio = useAppSelector(
+    (state) => state.portfolio.selectedPortfolio,
+  );
   useEffect(() => {
     dispatch(fetchDashboard());
-
-    if (selectedPortfolio) {
-      dispatch(fetchPortfolio(selectedPortfolio.id))
-    }
+    dispatch(fetchPortfolios());
     dispatch(fetchWatchlist());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedPortfolio) {
+      dispatch(fetchPortfolio(selectedPortfolio.id));
+    }
   }, [selectedPortfolio, dispatch]);
 
   return (

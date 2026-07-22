@@ -37,7 +37,7 @@ export default function Watchlist() {
 
             const price = Number(quote?.price);
             const changePercent = Number(
-              quote?.changePercent?.replace("%", ""),
+              quote?.change_percent?.replace("%", ""),
             );
 
             const hasQuote = quote?.price !== undefined && !Number.isNaN(price);
@@ -50,7 +50,7 @@ export default function Watchlist() {
                 <span className="font-medium text-white">{stock.symbol}</span>
 
                 {hasQuote ? (
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 text-white">
                     <span>
                       {price.toLocaleString("en-US", {
                         style: "currency",

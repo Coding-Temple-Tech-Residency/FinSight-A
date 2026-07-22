@@ -40,6 +40,7 @@ from app.schemas.portfolio import (
 from app.schemas.ai import (PortfolioInsight)
 from datetime import datetime
 from app.services import ai as ai_service
+from app.services.portfolio_performance import compute_performance
 
 router = APIRouter(
     prefix="/portfolios",
@@ -135,6 +136,37 @@ async def get_portfolio(
     except Exception as e:
         logger.error(f"Internal error in portfolio endpoint: {e}")
         raise HTTPException(status_code=500, detail="An internal error occurred")
+
+
+@router.get(
+    "/{portfolio_id}/performance",
+    response_model=PortfolioPerformanceResponse,
+    summary="Get portfolio performance",
+)
+async def get_portfolio_performance(
+    portfolio_id: str,
+    range: Literal["1W", "1M", "YTD", "1Y"] = Query("YTD"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get historical portfolio performance for the selected time range."""
+
+    portfolio = db.query(Portfolio).filter_by(
+        id=str(portfolio_id),
+        user_id=current_user.id,
+    ).first()
+
+    if not portfolio:
+        raise HTTPException(
+            status_code=404,
+            detail="Portfolio not found",
+        )
+
+    return compute_performance(
+        portfolio_id=str(portfolio_id),
+        range_param=range,
+        db=db,
+    )
 
 
 @router.patch(

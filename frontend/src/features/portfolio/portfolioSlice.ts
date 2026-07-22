@@ -1,296 +1,314 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { type Holding, type PortfolioState, type PortfolioListResponse, HoldingListResponse, Portfolio, PortfolioCreate, type Transaction, PortfolioDashboardResponse, TransactionCreate } from '../../types/portfolio';
-import { getPortfolios, createHolding, editHolding, deleteHolding, getHoldings, createPortfolio, deletePortfolio, getTransactions, createTransaction } from '../../services/portfolioServices';
-import { getPortfolio, getQuote } from "../../services/portfolioApi";
-import { StockQuote } from '../../types/stock';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  type Holding,
+  type PortfolioState,
+  type PortfolioListResponse,
+  HoldingListResponse,
+  Portfolio,
+  PortfolioCreate,
+  type Transaction,
+  PortfolioDashboardResponse,
+  TransactionCreate,
+  PerformanceRange,
+  PortfolioPerformanceResponse,
+} from "../../types/portfolio";
+import {
+  getPortfolios,
+  createHolding,
+  editHolding,
+  deleteHolding,
+  getHoldings,
+  createPortfolio,
+  deletePortfolio,
+  getTransactions,
+  createTransaction,
+} from "../../services/portfolioServices";
+import {
+  getPortfolio,
+  getQuote,
+  getPortfolioPerformance,
+} from "../../services/portfolioApi";
+import { StockQuote } from "../../types/stock";
 
 const initialState: PortfolioState = {
-    portfolios: [],
-    selectedPortfolio: null,
-    holdings: [],
-    transactions: [],
+  portfolios: [],
+  selectedPortfolio: null,
+  holdings: [],
+  transactions: [],
 
-    portfolio: null,
-    quotes: {},
+  portfolio: null,
+  quotes: {},
+  performance: null,
 
-    portfolioStatus: 'idle',
-    holdingStatus: 'idle',
-    transactionStatus: 'idle',
-    quoteStatus: 'idle',
-    error: null,
+  portfolioStatus: "idle",
+  holdingStatus: "idle",
+  transactionStatus: "idle",
+  quoteStatus: "idle",
+  performanceStatus: "idle",
+  error: null,
 };
 
-
 export const fetchPortfolios = createAsyncThunk(
-    'portfolio/fetchPortfolios',
-    async () => {
-        return await getPortfolios();
-    }
+  "portfolio/fetchPortfolios",
+  async () => {
+    return await getPortfolios();
+  },
 );
 
-export const fetchHoldings = createAsyncThunk<
-    HoldingListResponse, string>
-    (
-    'portfolio/fetchHoldings',
-    async (portfolioId) => {
-        return await getHoldings(portfolioId);
-    }
-)
+export const fetchPortfolioPerformance = createAsyncThunk<
+  PortfolioPerformanceResponse,
+  { portfolioId: string; range: PerformanceRange }
+>("portfolio/fetchPortfolioPerformance", async ({ portfolioId, range }) => {
+  return await getPortfolioPerformance(portfolioId, range);
+});
 
-export const addHolding = createAsyncThunk<Holding, 
-{
+export const fetchHoldings = createAsyncThunk<HoldingListResponse, string>(
+  "portfolio/fetchHoldings",
+  async (portfolioId) => {
+    return await getHoldings(portfolioId);
+  },
+);
+
+export const addHolding = createAsyncThunk<
+  Holding,
+  {
     portfolioId: string;
-    holding: Omit<Holding, 'id'>
+    holding: Omit<Holding, "id">;
+  }
+>("portfolio/addHolding", async ({ portfolioId, holding }) => {
+  return await createHolding(portfolioId, holding);
+});
 
-}>(
-    'portfolio/addHolding',
-    async ({portfolioId, holding}) => {
-        return await createHolding(portfolioId, holding);
-    }
-);
-
-export const updateHolding = createAsyncThunk<Holding, 
-
-{
+export const updateHolding = createAsyncThunk<
+  Holding,
+  {
     portfolioId: string;
-    holding: Holding
-}>(
-    'portfolio/updateHolding',
-    async ({portfolioId, holding}) => {
+    holding: Holding;
+  }
+>("portfolio/updateHolding", async ({ portfolioId, holding }) => {
+  return await editHolding(portfolioId, holding);
+});
 
-        return await editHolding(portfolioId, holding);
-    }
-);
-
-export const removeHolding = createAsyncThunk< string,
-    {
-        portfolioId: string;
-        holdingId: string;
-    }
->(
-    'portfolio/removeHolding',
-    async ({portfolioId, holdingId}) => {
-        return await deleteHolding(portfolioId, holdingId);
-    }
-);
+export const removeHolding = createAsyncThunk<
+  string,
+  {
+    portfolioId: string;
+    holdingId: string;
+  }
+>("portfolio/removeHolding", async ({ portfolioId, holdingId }) => {
+  return await deleteHolding(portfolioId, holdingId);
+});
 
 export const addPortfolio = createAsyncThunk<Portfolio, PortfolioCreate>(
-    'portfolio/addPortfolio',
-    async (portfolio) => {
-        return await createPortfolio(portfolio);
-    }
+  "portfolio/addPortfolio",
+  async (portfolio) => {
+    return await createPortfolio(portfolio);
+  },
 );
 
 export const removePortfolio = createAsyncThunk<string, string>(
-    'portfolio/removePortfolio', 
-    async (id) => {
-        return await deletePortfolio(id);
-    }
-)
+  "portfolio/removePortfolio",
+  async (id) => {
+    return await deletePortfolio(id);
+  },
+);
 
 //Transactions
 
 export const fetchTransactions = createAsyncThunk<Transaction[], string>(
-    'portfolio/fetchTransactions',
-    async (portfolioId) => {
-        return await getTransactions(portfolioId);
-    }
+  "portfolio/fetchTransactions",
+  async (portfolioId) => {
+    return await getTransactions(portfolioId);
+  },
 );
 
-export const addTransaction = createAsyncThunk<Transaction, {
+export const addTransaction = createAsyncThunk<
+  Transaction,
+  {
     portfolioId: string;
     transaction: TransactionCreate;
-    
-}
->
-(
-    'portfolio/addTransaction',
-    async({
-        portfolioId,
-        transaction
-    }) => {
-        return await createTransaction(
-            portfolioId,
-            transaction
-        );
-    }
-);
+  }
+>("portfolio/addTransaction", async ({ portfolioId, transaction }) => {
+  return await createTransaction(portfolioId, transaction);
+});
 
 //Dashboard
-export const fetchPortfolio = createAsyncThunk
-<PortfolioDashboardResponse, string>(
-  "portfolio/fetchPortfolio",
-  async (portfolioId) => {
-    const portfolio = await getPortfolio(portfolioId);
-    const holdingsResponse = await getHoldings(portfolioId);
-    // if (portfolio.total === 0) {
-    //   throw new Error("No portfolio found");
-    // }
+export const fetchPortfolio = createAsyncThunk<
+  PortfolioDashboardResponse,
+  string
+>("portfolio/fetchPortfolio", async (portfolioId) => {
+  const portfolio = await getPortfolio(portfolioId);
+  const holdingsResponse = await getHoldings(portfolioId);
+  // if (portfolio.total === 0) {
+  //   throw new Error("No portfolio found");
+  // }
 
-    //const portfolio = await getPortfolio(portfolios.portfolios[0].id);
-    const holdings = holdingsResponse.holdings;
+  //const portfolio = await getPortfolio(portfolios.portfolios[0].id);
+  const holdings = holdingsResponse.holdings;
 
-    const quoteResults = await Promise.all(
-        holdings.map(async (holding) => {
-            const quote = await getQuote(holding.symbol);
-            return {
-                symbol: holding.symbol,
-                quote
-            }
-        })
-    )
-    const quotes = await quoteResults.reduce(
-      (acc, item) => {
-        acc[item.symbol] = item.quote;
-        return acc;
-      },
-      {} as Record<string, StockQuote>
-    );
+  const quoteResults = await Promise.all(
+    holdings.map(async (holding) => {
+      const quote = await getQuote(holding.symbol);
+      return {
+        symbol: holding.symbol,
+        quote,
+      };
+    }),
+  );
+  const quotes = await quoteResults.reduce(
+    (acc, item) => {
+      acc[item.symbol] = item.quote;
+      return acc;
+    },
+    {} as Record<string, StockQuote>,
+  );
 
-    return {
-      portfolio,
-      holdings,
-      quotes,
-    };
-  }
-);
+  return {
+    portfolio,
+    holdings,
+    quotes,
+  };
+});
 
 const portfolioSlice = createSlice({
-    name: 'portfolio',
-    initialState,
-    reducers: {
-        setSelectedPortfolio(
-            state,
-            action: PayloadAction<Portfolio>
-        ) {
-            state.selectedPortfolio = 
-                action.payload;
+  name: "portfolio",
+  initialState,
+  reducers: {
+    setSelectedPortfolio(state, action: PayloadAction<Portfolio>) {
+      state.selectedPortfolio = action.payload;
+    },
+  },
+
+  extraReducers: (builder) => {
+    builder
+      //Portfolio
+      .addCase(fetchPortfolios.pending, (state) => {
+        state.portfolioStatus = "loading";
+      })
+
+      .addCase(fetchPortfolios.fulfilled, (state, action) => {
+        state.portfolioStatus = "succeeded";
+        state.portfolios = action.payload.portfolios;
+
+        if (!state.selectedPortfolio && action.payload.portfolios.length > 0) {
+          state.selectedPortfolio = action.payload.portfolios[0];
         }
-    },
+      })
 
-    extraReducers: (builder) => {
+      .addCase(fetchPortfolios.rejected, (state, action) => {
+        ((state.portfolioStatus = "failed"),
+          (state.error = action.error.message ?? "Unknown error"));
+      })
 
-        builder
-            //Portfolio
-            .addCase(fetchPortfolios.pending, (state) => {
-                state.portfolioStatus = 'loading';
-            })
+      //Portfolio Performance
+      .addCase(fetchPortfolioPerformance.pending, (state) => {
+        state.performanceStatus = "loading";
+        state.error = null;
+      })
 
-            .addCase(fetchPortfolios.fulfilled, (state, action) => {
-                state.portfolioStatus = 'succeeded';
-                state.portfolios = action.payload.portfolios;
-            })
+      .addCase(fetchPortfolioPerformance.fulfilled, (state, action) => {
+        state.performanceStatus = "succeeded";
+        state.performance = action.payload;
+      })
 
-            .addCase(fetchPortfolios.rejected, (state, action) => {
-                state.portfolioStatus = 'failed',
-                state.error = action.error.message ?? 'Unknown error';
-            })
-            //Holdings
-            .addCase(addHolding.fulfilled, (state, action) => {
-                state.holdings.push(action.payload);
-            })
+      .addCase(fetchPortfolioPerformance.rejected, (state, action) => {
+        state.performanceStatus = "failed";
+        state.error =
+          action.error.message ?? "Unable to fetch portfolio performance";
+      })
 
-            .addCase(updateHolding.fulfilled, (state, action) => {
-                const index = state.holdings.findIndex(
-                    (holding) => holding.id === action.payload.id
-                );
+      //Holdings
+      .addCase(addHolding.fulfilled, (state, action) => {
+        state.holdings.push(action.payload);
+      })
 
-                if (index !== -1) {
-                    state.holdings[index] = action.payload;
-                }
-            })
+      .addCase(updateHolding.fulfilled, (state, action) => {
+        const index = state.holdings.findIndex(
+          (holding) => holding.id === action.payload.id,
+        );
 
-            .addCase(removeHolding.fulfilled, (state, action) => {
-                state.holdings = state.holdings.filter(
-                    (holding) => holding.id !== action.payload
-                )
-            })
+        if (index !== -1) {
+          state.holdings[index] = action.payload;
+        }
+      })
 
-            .addCase(fetchHoldings.pending, (state) => {
-                state.holdingStatus = 'loading';
-            })
+      .addCase(removeHolding.fulfilled, (state, action) => {
+        state.holdings = state.holdings.filter(
+          (holding) => holding.id !== action.payload,
+        );
+      })
 
-            .addCase(fetchHoldings.fulfilled, (state, action) => {
-                state.holdingStatus = 'succeeded';
+      .addCase(fetchHoldings.pending, (state) => {
+        state.holdingStatus = "loading";
+      })
 
-                state.holdings = action.payload.holdings;
-            })
+      .addCase(fetchHoldings.fulfilled, (state, action) => {
+        state.holdingStatus = "succeeded";
 
-            .addCase(fetchHoldings.rejected, (state, action) => {
-                state.holdingStatus = 'failed';
+        state.holdings = action.payload.holdings;
+      })
 
-                state.error = 
-                    action.error.message ?? 'Unkown error';
-            })
+      .addCase(fetchHoldings.rejected, (state, action) => {
+        state.holdingStatus = "failed";
 
-            .addCase(addPortfolio.fulfilled, (state, action) => {
+        state.error = action.error.message ?? "Unkown error";
+      })
 
-                console.log('Created portfolio:', action.payload)
-                state.portfolios.push(action.payload);
-            })
+      .addCase(addPortfolio.fulfilled, (state, action) => {
+        console.log("Created portfolio:", action.payload);
+        state.portfolios.push(action.payload);
+      })
 
-            .addCase(removePortfolio.fulfilled, (state, action) => {
-                state.portfolios = state.portfolios.filter(
-                    (portfolio) => 
-                        portfolio.id !== action.payload
-                );
-                if ( 
-                    state.selectedPortfolio?.id === action.payload
-                ) {
-                    state.selectedPortfolio = null;
-                    state.holdings = []
-                }
-            })
+      .addCase(removePortfolio.fulfilled, (state, action) => {
+        state.portfolios = state.portfolios.filter(
+          (portfolio) => portfolio.id !== action.payload,
+        );
+        if (state.selectedPortfolio?.id === action.payload) {
+          state.selectedPortfolio = null;
+          state.holdings = [];
+        }
+      })
 
-            //Transactions
-            .addCase(fetchTransactions.pending, (state) => {
-                state.transactionStatus = 'loading';
-            })
-            .addCase(fetchTransactions.fulfilled, (state, action) => {
-                state.transactionStatus = 'succeeded';
-                state.transactions = action.payload
-            })
-            .addCase(fetchTransactions.rejected, (state,action) => {
-                state.transactionStatus = 'failed';
-                state.error = action.error.message ?? 'Unable to fetch transaction'
-            })
-            .addCase(addTransaction.fulfilled, (state, action ) => {
-                state.transactions.push(action.payload);
-            })
+      //Transactions
+      .addCase(fetchTransactions.pending, (state) => {
+        state.transactionStatus = "loading";
+      })
+      .addCase(fetchTransactions.fulfilled, (state, action) => {
+        state.transactionStatus = "succeeded";
+        state.transactions = action.payload;
+      })
+      .addCase(fetchTransactions.rejected, (state, action) => {
+        state.transactionStatus = "failed";
+        state.error = action.error.message ?? "Unable to fetch transaction";
+      })
+      .addCase(addTransaction.fulfilled, (state, action) => {
+        state.transactions.push(action.payload);
+      })
 
-            //Dashboard
-            .addCase(fetchPortfolio.pending, (state) => {
-            state.portfolioStatus = "loading";
-            state.error = null;
-            })
+      //Dashboard
+      .addCase(fetchPortfolio.pending, (state) => {
+        state.portfolioStatus = "loading";
+        state.error = null;
+      })
 
-            .addCase(fetchPortfolio.fulfilled, (state, action) => {
-            state.portfolioStatus = "idle";
+      .addCase(fetchPortfolio.fulfilled, (state, action) => {
+        state.portfolioStatus = "idle";
 
-            state.portfolio = action.payload.portfolio;
+        state.portfolio = action.payload.portfolio;
 
-            state.holdings = action.payload.holdings;
+        state.holdings = action.payload.holdings;
 
-            state.quotes = action.payload.quotes;
-            })
+        state.quotes = action.payload.quotes;
+      })
 
-            .addCase(fetchPortfolio.rejected, (state, action) => {
-            state.portfolioStatus = "failed";
-            state.error = action.error.message ?? "Unknown error";
-            });
-
-    },
+      .addCase(fetchPortfolio.rejected, (state, action) => {
+        state.portfolioStatus = "failed";
+        state.error = action.error.message ?? "Unknown error";
+      });
+  },
 });
 
 export default portfolioSlice.reducer;
 
-
 export const { setSelectedPortfolio } = portfolioSlice.actions;
 // FinSight-A/src/features/portfolio/portfolioSlice.ts
-
-
-
-
-
-
-

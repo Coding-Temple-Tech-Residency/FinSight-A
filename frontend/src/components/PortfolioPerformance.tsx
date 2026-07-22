@@ -1,7 +1,9 @@
 // FinSight-A/frontend/src/components/PortfolioPerformance.tsx
 
-import { useState } from "react";
-import { useAppSelector } from "../app/hooks";
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { fetchPortfolioPerformance } from "../features/portfolio/portfolioSlice";
+import type { PerformanceRange } from "../types/portfolio";
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,15 +15,30 @@ import {
   Legend,
 } from "recharts";
 
-const timeframes = ["1D", "1W", "1M", "3M", "YTD", "1Y", "ALL"] as const;
+const timeframes: PerformanceRange[] = ["1W", "1M", "YTD", "1Y"];
 
 export default function PortfolioPerformance() {
-  const { data } = useAppSelector((state) => state.dashboard);
+  const dispatch = useAppDispatch();
+
+  const { portfolio, performance } = useAppSelector(
+    (state) => state.portfolio,
+  );
 
   const [selectedTimeframe, setSelectedTimeframe] =
-    useState<(typeof timeframes)[number]>("YTD");
+    useState<PerformanceRange>("YTD");
 
-  const performance = data?.performance ?? [];
+  useEffect(() => {
+    if (!portfolio?.id) return;
+
+    dispatch(
+      fetchPortfolioPerformance({
+        portfolioId: portfolio.id,
+        range: selectedTimeframe,
+      }),
+    );
+  }, [dispatch, portfolio?.id, selectedTimeframe]);
+
+  const performanceData = performance?.series ?? [];
 
   return (
     <div className="rounded-2xl max-h-[250px] border border-[#24354D] bg-[#0F1B2D] p-2">
@@ -47,7 +64,7 @@ export default function PortfolioPerformance() {
 
       <div className="h-[150px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={performance}>
+          <LineChart data={performanceData}>
             <CartesianGrid stroke="#24354D" vertical={false} />
 
             <XAxis
@@ -69,20 +86,10 @@ export default function PortfolioPerformance() {
 
             <Line
               type="monotone"
-              dataKey="portfolio"
+              dataKey="value"
               name="Portfolio"
               stroke="#3DD6F5"
               strokeWidth={3}
-              dot={false}
-            />
-
-            <Line
-              type="monotone"
-              dataKey="benchmark"
-              name="S&P 500"
-              stroke="#94A3B8"
-              strokeWidth={2}
-              strokeDasharray="6 6"
               dot={false}
             />
           </LineChart>
