@@ -86,7 +86,7 @@ export default function Watchlist() {
         </div>
 
         <Link to="/watchlist" className="shrink-0">
-          <button className="rounded-lg bg-[#3DD6F5] px-4 py-2 text-sm">
+          <button className="cursor-pointer rounded-lg bg-[#3DD6F5] px-4 py-2 text-sm hover:opacity-50">
             View Full Watchlist →
           </button>
         </Link>

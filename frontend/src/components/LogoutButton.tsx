@@ -12,7 +12,7 @@ function LogoutButton () {
     }
 
     return (
-        <button className="bg-red-600 hover:bg-red-800 active:bg-red-900 text-black px-4 py-1 rounded-md transistion focus:ring-2 focus:ring-red-400"
+        <button className="cursor-pointer bg-red-600 hover:bg-red-800 active:bg-red-900 text-black px-4 py-1 rounded-md transistion focus:ring-2 focus:ring-red-400"
             onClick ={handleLogout}
         >
             Log Out

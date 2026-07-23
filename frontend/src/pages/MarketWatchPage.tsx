@@ -376,7 +376,7 @@ export default function MarketWatchPage() {
                   </p>
 
                   <div className="mt-3 text-sm">
-                    <span className="text-slate-400">🔑 Market:</span>{" "}
+                    <span className="text-slate-400">Market:</span>{" "}
                     <span className="text-[#3DD6F5]">
                       Select a stock for insight
                     </span>
