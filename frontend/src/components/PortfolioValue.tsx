@@ -106,7 +106,7 @@ export default function PortfolioValue() {
 
       <Link
         to="/portfolio"
-        className="mt-7 block w-full rounded-lg bg-[#3DD6F5] py-2 text-center text-[15px] font-semibold text-[#0D1B2A] transition hover:opacity-90"
+        className="mt-7 block w-full rounded-lg bg-[#3DD6F5] py-2 text-center text-[15px] font-semibold text-[#0D1B2A] transition hover:opacity-50"
       >
         View Portfolio →
       </Link>

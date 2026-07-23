@@ -56,7 +56,7 @@ export default function PortfolioFinSight() {
         {/* Button */}
         <div className="flex justify-end">
           <Link to="/chat">
-            <button className="rounded-lg bg-[#3DD6F5] px-5 py-2 text-[14px] font-semibold text-black transition hover:opacity-90">
+            <button className="rounded-lg bg-[#3DD6F5] px-5 py-2 text-[14px] font-semibold text-black transition hover:opacity-50">
               Ask Fin →
             </button>
           </Link>
