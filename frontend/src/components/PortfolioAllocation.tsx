@@ -42,7 +42,7 @@ export default function PortfolioAllocation() {
           </h2>
         </div>
 
-        <button className="text-slate-400 hover:text-cyan-400 transition">
+        <button className="cursor-pointer text-slate-400 hover:text-cyan-400 transition">
           ☰
         </button>
       </div>

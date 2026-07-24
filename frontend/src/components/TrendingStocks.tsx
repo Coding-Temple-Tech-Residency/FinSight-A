@@ -209,7 +209,7 @@ export default function TrendingStocks() {
       </div>
 
       <div className="mt-auto flex justify-end pt-4">
-        <button className="rounded-lg bg-[#3DD6F5] px-4 py-2 text-[15px] font-medium text-black transition hover:opacity-90">
+        <button className="cursor-pointer rounded-lg bg-[#3DD6F5] px-4 py-2 text-[15px] font-medium text-black transition hover:opacity-50">
           View all trending stocks →
         </button>
       </div>

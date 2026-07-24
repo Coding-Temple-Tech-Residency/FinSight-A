@@ -125,7 +125,7 @@ export default function PortfolioPage() {
                     <div>
                         <h1 className="text-3xl font-bold">Portfolio</h1>
                     </div>
-                    <button className="rounded-lg bg-cyan-600 px-4 py-2 font-medium hover:bg-cyan-500 transition" onClick={handleCreatePortfolio}>
+                    <button className="cursor-pointer rounded-lg bg-cyan-600 px-4 py-2 font-medium hover:bg-cyan-500 transition" onClick={handleCreatePortfolio}>
                         Create Portfolio
                     </button>
                 </header>
@@ -154,7 +154,7 @@ export default function PortfolioPage() {
                                 {selectedPortfolio.name}
                             </h2>
 
-                            <button className="border rounded-lg py-2 px-2 bg-cyan-500 transition hover:bg-slate-500 mb-2 mt-2" onClick={() => setShowHoldingForm(true)}>
+                            <button className="cursor-pointer border rounded-lg py-2 px-2 bg-cyan-500 transition hover:bg-slate-500 mb-2 mt-2" onClick={() => setShowHoldingForm(true)}>
                                 Add Holding
                             </button>
                             

@@ -50,7 +50,7 @@ export default function FinSight() {
           </p>
         </div>
 
-        <button className="mt-3 w-full rounded-lg bg-[#3DD6F5] py-2 text-[15px] font-semibold text-black transition hover:opacity-90">
+        <button className="cursor-pointer mt-3 w-full rounded-lg bg-[#3DD6F5] py-2 text-[15px] font-semibold text-black transition hover:opacity-50">
           Explore Trending Stocks →
         </button>
       </div>
