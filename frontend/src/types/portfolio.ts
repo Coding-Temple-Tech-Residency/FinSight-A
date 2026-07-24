@@ -21,6 +21,29 @@ export interface Portfolio {
 
 export type Status = | 'idle' | 'loading' | 'succeeded' | 'failed';
 
+export type PerformanceRange = "1W" | "1M" | "YTD" | "1Y";
+
+export interface PortfolioPerformancePoint {
+    date: string;
+    value: number;
+}
+
+export interface PortfolioPerformanceSummary {
+    start_value: number;
+    end_value: number;
+    change_abs: number;
+    change_pct: number;
+}
+
+export interface PortfolioPerformanceResponse {
+    portfolio_id: string;
+    range: PerformanceRange;
+    basis: "reconstructed" | "current_holdings_fallback";
+    disclaimer: string;
+    summary: PortfolioPerformanceSummary;
+    series: PortfolioPerformancePoint[];
+}
+
 export interface PortfolioState {
     portfolios: Portfolio[];
     selectedPortfolio: Portfolio | null;
@@ -28,11 +51,13 @@ export interface PortfolioState {
     transactions: Transaction[];
     quotes: Record<string, StockQuote>;
     portfolio: Portfolio | null; //potentially delete and replace where it is being called with selectedPortfolio
-    
+    performance: PortfolioPerformanceResponse | null;
+
     portfolioStatus: Status;
     holdingStatus: Status
     transactionStatus: Status
     quoteStatus: Status
+    performanceStatus: Status;
     error: string | null;
 }
 // export interface PortfolioState {

@@ -76,7 +76,7 @@ def generate_portfolio_insight(
         raise Exception('GROQ_API_KEY is not configured.')
     
     prompt = f"""
-You are FinSight AI, a portfolio analysis assistant._build_system_prompt
+You are FinSight AI, a portfolio analysis assistant.
 
 Analyze this investment portfolio.
 

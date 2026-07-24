@@ -2,16 +2,16 @@
 
 export default function TrendingPerformance() {
   return (
-    <div className="rounded-2xl max-h-[250px] border border-[#24354D] bg-[#0F1B2D] p-2">
+    <div className="shrink-0 rounded-2xl border border-[#24354D] bg-[#0F1B2D] p-3">
       <h2 className="mb-4 text-[20px] font-semibold text-white">
-        📈 Trending Performance (YTD)
+        📈 Trending Stock Performance (YTD)
       </h2>
 
       <div className="mb-4 flex justify-between">
         {["1D", "1W", "1M", "3M", "YTD", "1Y", "ALL"].map((time) => (
           <button
             key={time}
-            className={`px-1 py-1 text-[13px] transition ${
+            className={`rounded-md px-2 py-1 text-[13px] transition ${
               time === "YTD"
                 ? "bg-[#3DD6F5] font-semibold text-[#0D1B2A]"
                 : "text-gray-300 hover:bg-[#16233A]"
@@ -23,11 +23,7 @@ export default function TrendingPerformance() {
       </div>
 
       <div className="p-1">
-        <svg
-          viewBox="0 0 900 300"
-          className="h-[150px] w-full"
-          fill="none"
-        >
+        <svg viewBox="0 0 900 300" className="h-[150px] w-full" fill="none">
           {/* Grid */}
           <line x1="0" y1="250" x2="900" y2="250" stroke="#24354D" />
           <line x1="0" y1="190" x2="900" y2="190" stroke="#1B2A42" />

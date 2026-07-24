@@ -11,7 +11,7 @@ export interface StockQuote {
   symbol: string;
   price?: string;
   change?: string;
-  changePercent?: string;
+  change_percent?: string;
   volume?: string;
   latestTradingDay?: string;
 }

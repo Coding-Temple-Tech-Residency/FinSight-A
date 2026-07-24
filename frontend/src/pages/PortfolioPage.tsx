@@ -9,7 +9,7 @@ import HoldingList from "../components/HoldingsList";
 import TransactionList from "../components/TransactionList";
 import TransactionForm from '../components/TransactionForm';
 import { getPortfolioInsights } from "../services/insightsAPI";
-import { fetchPorfolioInsights } from "../features/insights/insightSlice";
+import { fetchPortfolioInsights } from "../features/insights/insightSlice";
 import AIInsightCard from "../components/AIInsightsCard";
 
 export default function PortfolioPage() {
@@ -52,7 +52,7 @@ export default function PortfolioPage() {
         dispatch(setSelectedPortfolio(portfolio));
         dispatch(fetchHoldings(portfolio.id));
         dispatch(fetchTransactions(portfolio.id))
-        dispatch(fetchPorfolioInsights(portfolio.id))
+        dispatch(fetchPortfolioInsights(portfolio.id))
     }
 
     const handleCreatePortfolio = () => {

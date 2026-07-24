@@ -3,14 +3,12 @@ import SignupButton from "./SignupButton";
 
 export default function UnlockCard() {
   return (
-    <div className="max-h-[200px] rounded-xl border border-[#24354D] bg-[#101c31] p-2">
+    <div className="shrink-0 rounded-xl border border-[#24354D] bg-[#101C31] p-1">
       <SignupButton />
 
-      <div className="mb-1 text-center text-[24px]">
-        🔐 → 🔓
-      </div>
+      <div className="my-3 text-center text-[28px]">🔐 → 🔓</div>
 
-      <h2 className="text-center text-[12px] font-semibold leading-tight text-white">
+      <h2 className="text-center text-[16px] font-semibold leading-tight text-[#3DD6F5]">
         Unlock Full FinSight™️
       </h2>
 

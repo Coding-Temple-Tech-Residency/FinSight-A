@@ -31,7 +31,7 @@ export default function PortfolioAllocation() {
     .sort((a, b) => b.percentage - a.percentage);
 
   return (
-    <section className="rounded-lg border border-slate-700 bg-[#091827] p-5 h-110">
+    <section className="flex h-full min-h-0 flex-col rounded-lg border border-slate-700 bg-[#091827] p-5">
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -48,7 +48,7 @@ export default function PortfolioAllocation() {
       </div>
 
       {/* Allocation List */}
-      <div className="space-y-5">
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-2">
         {allocations.map((item) => (
           <div key={item.symbol} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -65,10 +65,10 @@ export default function PortfolioAllocation() {
       </div>
 
       {/* Divider */}
-      <div className="my-8 border-t border-slate-700" />
+      <div className="my-6 shrink-0 border-t border-slate-700" />
 
       {/* Total */}
-      <div className="flex items-center justify-between text-lg">
+      <div className="flex shrink-0 items-center justify-between text-lg">
         <span className="font-medium text-white">Total</span>
 
         <span className="font-semibold text-white">
