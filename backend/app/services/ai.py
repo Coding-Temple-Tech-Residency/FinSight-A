@@ -12,7 +12,7 @@ from app.services.portfolio import get_user_portfolios
 from app.services.watchlist import list_items as list_watchlist_items
 from app.schemas.ai import PortfolioInsight
 
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "openai/gpt-oss-120b"
 _GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 
